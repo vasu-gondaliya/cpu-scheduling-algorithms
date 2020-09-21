@@ -1,0 +1,69 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-size: 17px;
+}
+
+h1 {
+    font-size: 26px;
+}
+
+table,
+th,
+td {
+    border-collapse: collapse;
+    text-align: center;
+    border: 2px solid black;
+    padding: 2px;
+}
+
+td {
+    width: 10px;
+}
+
+table input {
+    text-align: center;
+    border: none;
+    width: 90px;
+}
+
+.process-btn {
+    height: 5px;
+}
+
+.process-btn button {
+    height: 20px;
+    width: 20px;
+    font-size: 16px;
+    background-color: transparent;
+    border: none;
+    font-weight: bolder;
+}
+
+.hide {
+    display: none;
+}
+
+button {
+    padding: 5px;
+}
+
+.schedule-table-process,
+.schedule-table-process td {
+    border: 1px solid black;
+}
+
+.schedule-table-process {
+    margin-left: 6px;
+}
+
+.schedule-table-time,
+.schedule-table-time td {
+    text-align: left;
+    border: 1px solid white;
+}
+
+#algorithm-chart {
+    width: 1000px;
+    height: 500px;
+}

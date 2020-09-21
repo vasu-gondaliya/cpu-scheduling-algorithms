@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduling Algorithms</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Scheduling Algorithms</h1>
+    <br>
+    <form id="algorithms">
+        <input type="radio" name="algo" id="fcfs" checked> <label for="fcfs">First Come First Serve</label> <br>
+        <input type="radio" name="algo" id="sjf"> <label for="sjf">Shortest Job First</label> <br>
+        <input type="radio" name="algo" id="srjf"> <label for="srjf">Shortest Remaining Job First</label> <br>
+        <input type="radio" name="algo" id="rr"> <label for="rr">Round Robin</label> <br>
+        <input type="radio" name="algo" id="ljf"> <label for="ljf">Longest Job First</label> <br>
+        <input type="radio" name="algo" id="lrjf"> <label for="lrjf">Longest Remaining Job First</label> <br>
+        <input type="radio" name="algo" id="hrrn"> <label for="hrrn">Highest Response Ratio Next</label> <br>
+        <input type="radio" name="algo" id="pnp"> <label for="pnp">Priority Non Preemptive</label> <br>
+        <input type="radio" name="algo" id="pp"> <label for="pp">Priority Preemptive</label> <br>
+    </form>
+    <br>
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th class="process-id">Process ID</th>
+                <th class="priority hide">Priority</th>
+                <th class="arrival-time">Arrival Time</th>
+                <th class="process-time" colspan="1">Process Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="process-id" rowspan="2">P1</td>
+                <td class="priority hide" rowspan="2"><input type="number" min="1" step="1" value="1"></td>
+                <td class="arrival-time" rowspan="2"><input type="number" min="0" step="1" value="0"> </td>
+                <td class="process-time cpu process-heading" colspan="">CPU</td>
+                <td class="process-btn"><button type="button" class="add-process-btn">+</button></td>
+                <td class="process-btn"><button type="button" class="remove-process-btn">-</button></td>
+            </tr>
+            <tr>
+                <td class="process-time cpu process-input"><input type="number" min="1" step="1" value="1"> </td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="time-quantum" class="hide">
+        <br>
+        <label for="tq">Time Quantum : </label>
+        <input type="number" name="Time Quantum" id="tq" min="1" step="1" value="1">
+    </div>
+    <br>
+    <button type="button" class="remove-btn">-</button>
+    <button type="button" class="add-btn">+</button>
+    <button type="button" class="calculate">Calculate</button>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
