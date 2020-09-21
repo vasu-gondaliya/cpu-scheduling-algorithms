@@ -381,15 +381,16 @@ document.querySelector(".calculate").onclick = () => {
     function cputhroughput() {
         let tbt = 0;
         totalBurstTime.forEach(element => tbt += element);
+        let lastct = 0;
+        completionTime.forEach(element => lastct = Math.max(lastct, element));
         let cpu = document.createElement("p");
-        cpu.innerHTML = "CPU Utilization : " + (tbt / completionTime[process - 1]) * 100 + "%";
+        cpu.innerHTML = "CPU Utilization : " + (tbt / lastct) * 100 + "%";
         document.body.appendChild(cpu);
         let tp = document.createElement("p");
-        tp.innerHTML = "Throughput : " + (process / completionTime[process - 1]);
+        tp.innerHTML = "Throughput : " + (process / lastct);
         document.body.appendChild(tp);
     }
     cputhroughput();
-
     document.body.appendChild(algorithmChart);
     resetVariables();
 };
