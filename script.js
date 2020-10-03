@@ -192,6 +192,9 @@ function resetVariables() {
     processId = [], priorityArray = [], arrivalTime = [], processTimeArray = [], processTimeNumber = [], remainingProcessTimeArray = [], totalBurstTime = [], remainingBurstTime = [], currentProcessIndex = [], start = [], done = [], currentTime = 0, returnTime = [], completionTime = [], turnAroundTime = [], waitingTime = [], responseTime = [], schedule = [];
 }
 document.querySelector(".calculate").onclick = () => {
+    document.getElementById("output").remove();
+    let output = document.createElement("div");
+    output.id = "output";
     let algorithmChart = document.createElement("div");
     algorithmChart.id = "algorithm-chart";
     let chartData = [];
@@ -310,11 +313,13 @@ document.querySelector(".calculate").onclick = () => {
     function createTable(schedule) {
         let scheduleTableHeading = document.createElement("h3");
         scheduleTableHeading.innerHTML = "Schedule Table";
-        document.body.appendChild(scheduleTableHeading);
+        output.appendChild(scheduleTableHeading);
         let endTime = 0;
         schedule.forEach(element => endTime += element[1]);
         let table1 = document.createElement("table");
+        table1.id = "schedule-table-process";
         let table2 = document.createElement("table");
+        table2.id = "schedule-table-time";
         table1.classList.add("schedule-table");
         table1.classList.add("schedule-table-process");
         table2.classList.add("schedule-table");
@@ -341,14 +346,14 @@ document.querySelector(".calculate").onclick = () => {
         let cell = row2.insertCell(schedule.length);
         cell.innerHTML = endTime;
         cell.style.width = cellWidth + "px";
-        document.body.appendChild(table1);
-        document.body.appendChild(table2);
+        output.appendChild(table1);
+        output.appendChild(table2);
     }
     createTable(schedule);
     function createFinalTable() {
         let finalTableHeading = document.createElement("h3");
         finalTableHeading.innerHTML = "Final Table";
-        document.body.appendChild(finalTableHeading);
+        output.appendChild(finalTableHeading);
         let table = document.createElement("table");
         table.classList.add("final-table");
         let thead = table.createTHead();
@@ -375,7 +380,7 @@ document.querySelector(".calculate").onclick = () => {
             cell = row.insertCell(6);
             cell.innerHTML = responseTime[i];
         }
-        document.body.appendChild(table);
+        output.appendChild(table);
     }
     createFinalTable();
     function cputhroughput() {
@@ -385,13 +390,14 @@ document.querySelector(".calculate").onclick = () => {
         completionTime.forEach(element => lastct = Math.max(lastct, element));
         let cpu = document.createElement("p");
         cpu.innerHTML = "CPU Utilization : " + (tbt / lastct) * 100 + "%";
-        document.body.appendChild(cpu);
+        output.appendChild(cpu);
         let tp = document.createElement("p");
         tp.innerHTML = "Throughput : " + (process / lastct);
-        document.body.appendChild(tp);
+        output.appendChild(tp);
     }
     cputhroughput();
-    document.body.appendChild(algorithmChart);
+    output.appendChild(algorithmChart);
+    document.body.appendChild(output);
     resetVariables();
 };
 function fcfs() {
@@ -586,16 +592,18 @@ function rr() {
             remainingBurstTime[found] -= time;
             currentTime += time;
             schedule.push([found + 1, time]);
-            processId.forEach(function (element) {
-                if (done[element] == false && inQueue[element] == false && returnTime[element] <= currentTime) {
-                    processQueue.push(element)
-                    inQueue[element] = true;
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            });
+            for (let i = currentTime - time; i <= currentTime; i++) {
+                processId.forEach(function (element) {
+                    if (done[element] == false && inQueue[element] == false && returnTime[element] <= i) {
+                        processQueue.push(element)
+                        inQueue[element] = true;
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                });
+            }
             if (remainingProcessTimeArray[found][currentProcessIndex[found]] == 0) {
                 currentProcessIndex[found]++;
                 inQueue[found] = false;

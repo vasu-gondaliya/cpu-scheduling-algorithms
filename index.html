@@ -9,8 +9,15 @@
 </head>
 
 <body>
+
     <h1>Scheduling Algorithms</h1>
-    <br>
+    <h3>Instructions :</h3>
+    <ol class="instructions">
+        <li>Tiebreaker is Process ID.</li>
+        <li> Priority is set as 1 is high.</li>
+        <li> When burst time is criteria, total burst time is taken into consideration.</li>
+    </ol>
+    <h3>Algorithms : </h3>
     <form id="algorithms">
         <input type="radio" name="algo" id="fcfs" checked> <label for="fcfs">First Come First Serve</label> <br>
         <input type="radio" name="algo" id="sjf"> <label for="sjf">Shortest Job First</label> <br>
@@ -55,6 +62,7 @@
     <button type="button" class="remove-btn">-</button>
     <button type="button" class="add-btn">+</button>
     <button type="button" class="calculate">Calculate</button>
+    <div id="output"></div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="script.js"></script>
 

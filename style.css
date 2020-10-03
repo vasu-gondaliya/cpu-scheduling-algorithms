@@ -4,6 +4,15 @@
     font-size: 17px;
 }
 
+body {
+    margin: 10px 20px;
+}
+
+.instructions {
+    font-size: 14px;
+    margin: 10px 20px;
+}
+
 h1 {
     font-size: 26px;
 }
@@ -66,4 +75,8 @@ button {
 #algorithm-chart {
     width: 1000px;
     height: 500px;
+}
+
+#output {
+    margin-top: 20px;
 }
