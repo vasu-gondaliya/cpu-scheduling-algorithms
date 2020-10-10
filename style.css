@@ -76,7 +76,9 @@ button {
     width: 1000px;
     height: 500px;
 }
-
+#gantt-chart{
+    height: 100px;
+}
 #output {
     margin-top: 20px;
 }
