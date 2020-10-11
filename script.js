@@ -1,4 +1,17 @@
 let process = 1;
+let priorityPreference=1;//1 is high
+document.getElementById("priority-toggle-btn").onclick = () => {
+  let currentPriorityPreference=document.getElementById("priority-preference").innerText;
+  if(currentPriorityPreference=="high")
+  {
+    document.getElementById("priority-preference").innerText="low";
+  }
+  else{
+    document.getElementById("priority-preference").innerText="high";
+  }
+priorityPreference*=-1;
+};
+
 let radios = document.querySelectorAll("#algorithms input");
 function checkPriorityCell() {
   radios.forEach((radio) => {
@@ -784,7 +797,7 @@ function pnp() {
       currentTime++;
       schedule.push([-1, 1]);
     } else {
-      candidates.sort((a, b) => priorityArray[a] - priorityArray[b]);
+      candidates.sort((a, b) => priorityPreference*(priorityArray[a] - priorityArray[b]));
       let found = candidates[0];
       if (start[found] == false) {
         start[found] = true;
@@ -818,7 +831,7 @@ function pp() {
       currentTime++;
       schedule.push([-1, 1]);
     } else {
-      candidates.sort((a, b) => priorityArray[a] - priorityArray[b]);
+      candidates.sort((a, b) => priorityPreference*(priorityArray[a] - priorityArray[b]));
       let found = candidates[0];
       if (start[found] == false) {
         start[found] = true;
