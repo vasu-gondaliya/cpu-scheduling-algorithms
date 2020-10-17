@@ -24,8 +24,8 @@ td {
   text-align: center;
   border: 2px solid black;
 }
-td{
-    padding: 0 2px ;
+td {
+  padding: 0 2px;
 }
 
 table input {
@@ -71,24 +71,28 @@ button {
 }
 
 #algorithm-chart {
-  width: 1000px;
+  width: 80%;
   height: 500px;
 }
 #gantt-chart {
   height: 100px;
+  width: 100%;
+}
+#timeline-chart {
+  width: 100%;
 }
 #output {
   margin-top: 20px;
 }
-#priority-toggle-btn{
-    font-size: 12px;
-    font-weight: bold;
-    padding: 0 0;
-    width: 60px;
+#priority-toggle-btn {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0 0;
+  width: 60px;
 }
 /* #priority-preference{
     font-weight: bold;
 } */
-.preferences{
-    list-style: none;
+.preferences {
+  list-style: none;
 }
