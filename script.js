@@ -1,14 +1,3 @@
-Array.prototype.remove = function () {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-            this.splice(ax, 1);
-        }
-    }
-    return this;
-};
-
 //priority preferences change
 let priorityPreference = 1;
 document.getElementById("priority-toggle-btn").onclick = () => {
@@ -295,7 +284,6 @@ function showGanttChart(output, outputDiv) {
     outputDiv.appendChild(ganttChart);
 
 }
-
 function showTimelineChart(output, outputDiv) {
     let timelineChartHeading = document.createElement("h3");
     timelineChartHeading.innerHTML = "Timeline Chart";
@@ -332,9 +320,6 @@ function showTimelineChart(output, outputDiv) {
     }
     outputDiv.appendChild(timelineChart);
 }
-
-let algorithmFunctionArray = [fcfs, sjf, srjf, rr, ljf, lrjf, pnp, pp, hrrn];
-
 function showAlgorithmChart(outputDiv) {
     let algorithmChart = document.createElement("div");
     algorithmChart.id = "algorithm-chart";
@@ -346,6 +331,7 @@ function showAlgorithmChart(outputDiv) {
         "Waiting Time",
         "Response Time",
     ]);
+    let algorithmFunctionArray = [fcfs, sjf, srjf, rr, ljf, lrjf, pnp, pp, hrrn];
     let algorithmArray = ["fcfs", "sjf", "srjf", "rr", "ljf", "lrjf", "pnp", "pp", "hrrn"];
     algorithmArray.forEach((currentAlgorithm, index) => {
         let chartInput = new Input();
@@ -395,12 +381,7 @@ function showAlgorithmChart(outputDiv) {
     }
     outputDiv.appendChild(algorithmChart);
 }
-
-function showOutput(input, output, outputDiv) {
-
-    showGanttChart(output, outputDiv);
-    showTimelineChart(output, outputDiv);
-
+function showFinalTable(input, output, outputDiv) {
     let finalTableHeading = document.createElement("h3");
     finalTableHeading.innerHTML = "Final Table";
     outputDiv.appendChild(finalTableHeading);
@@ -450,9 +431,27 @@ function showOutput(input, output, outputDiv) {
     let tp = document.createElement("p");
     tp.innerHTML = "Throughput : " + process / lastct;
     outputDiv.appendChild(tp);
+}
+function showOutput(input, output, outputDiv) {
+    showGanttChart(output, outputDiv);
+    showTimelineChart(output, outputDiv);
+    showFinalTable(input, output, outputDiv);
+    showAlgorithmChart(outputDiv);
+}
 
-
-    showAlgorithmChart(outputDiv); output
+function reduceTimeLog(timeLog) {
+    let timeLogLength = timeLog.length;
+    let newTimeLog = [], j = 0;
+    for (let i = 0; i < timeLogLength - 1; i++) {
+        if (timeLog[i].time != timeLog[i + 1].time) {
+            newTimeLog.push(timeLog[j]);
+        }
+        j = i + 1;
+    }
+    if (j == timeLogLength - 1) {
+        newTimeLog.push(timeLog[j]);
+    }
+    return newTimeLog;
 }
 
 class Input {
@@ -485,18 +484,128 @@ class Output {
         this.waitingTime = [];
         this.responseTime = [];
         this.schedule = [];
+        this.timeLog = [];
     }
 }
 
-// class TimeLog {
-//     constructor() {
-//         this.remain = [];
-//         this.ready = [];
-//         this.running = [];
-//         this.block = [];
-//         this.terminate = [];
-//     }
-// }
+class TimeLog {
+    constructor() {
+        this.time = -1;
+        this.remain = [];
+        this.ready = [];
+        this.running = [];
+        this.block = [];
+        this.terminate = [];
+    }
+}
+
+function anim(timeLog) {
+    let interval;
+
+    let timeLogButton = document.createElement("button");
+    timeLogButton.type = "button";
+    timeLogButton.classList.add("time-log-btn");
+    timeLogButton.innerText = "Start Time Log";
+    document.body.appendChild(timeLogButton);
+    document.querySelector(".time-log-btn").onclick = () => {
+        let index = 0;
+        interval = setInterval(timeLogIteration(timeLog[index], index), 100);
+    };
+}
+
+function timeLogIteration(timeLog, index) {
+    let remainTableDiv = document.createElement("div");
+    remainTableDiv.id = "remain-table-div";
+    let readyTableDiv = document.createElement("div");
+    readyTableDiv.id = "ready-table-div";
+    let runningTableDiv = document.createElement("div");
+    runningTableDiv.id = "running-table-div";
+    let blockTableDiv = document.createElement("div");
+    blockTableDiv.id = "block-table-div";
+    let terminateTableDiv = document.createElement("div");
+    terminateTableDiv.id = "terminate-table-div";
+
+    google.charts.load('current', { 'packages': ['table'] });
+    google.charts.setOnLoadCallback(drawRemainTable);
+    google.charts.setOnLoadCallback(drawReadyTable);
+    google.charts.setOnLoadCallback(drawRunningTable);
+    google.charts.setOnLoadCallback(drawBlockTable);
+    google.charts.setOnLoadCallback(drawTerminateTable);
+
+    function drawRemainTable() {
+        var dataTable = [];
+        dataTable.push(["Remain"]);
+        timeLog.remain.forEach(element => {
+            dataTable.push([element]);
+        });
+        var data = google.visualization.arrayToDataTable(dataTable);
+        var table = new google.visualization.Table(document.getElementById('remain-table-div'));
+        table.draw(data, { width: '20%', height: '100%' });
+    }
+    function drawReadyTable() {
+        var dataTable = [];
+        dataTable.push(["Ready"]);
+        timeLog.ready.forEach(element => {
+            dataTable.push([element]);
+        });
+        var data = google.visualization.arrayToDataTable(dataTable);
+        var table = new google.visualization.Table(document.getElementById('ready-table-div'));
+        table.draw(data, { width: '20%', height: '100%' });
+    }
+    function drawRunningTable() {
+        var dataTable = [];
+        dataTable.push(["Running"]);
+        timeLog.running.forEach(element => {
+            dataTable.push([element]);
+        });
+        var data = google.visualization.arrayToDataTable(dataTable);
+        var table = new google.visualization.Table(document.getElementById('running-table-div'));
+        table.draw(data, { width: '20%', height: '100%' });
+    }
+    function drawBlockTable() {
+        var dataTable = [];
+        dataTable.push(["Block"]);
+        timeLog.block.forEach(element => {
+            dataTable.push([element]);
+        });
+        var data = google.visualization.arrayToDataTable(dataTable);
+        var table = new google.visualization.Table(document.getElementById('block-table-div'));
+        table.draw(data, { width: '20%', height: '100%' });
+    }
+    function drawTerminateTable() {
+        var dataTable = [];
+        dataTable.push(["Terminate"]);
+        timeLog.terminate.forEach(element => {
+            dataTable.push([element]);
+        });
+        var data = google.visualization.arrayToDataTable(dataTable);
+        var table = new google.visualization.Table(document.getElementById('terminate-table-div'));
+        table.draw(data, { width: '20%', height: '100%' });
+    }
+
+    let timeLogTime = document.createElement("p");
+    timeLogTime.innerHTML = "Time : " + timeLog.time;
+
+    document.getElementById("time-log-div").remove();
+    let timeLogDiv = document.createElement("div");
+    timeLogDiv.id = "time-log-div";
+    timeLogDiv.appendChild(timeLogTime);
+    timeLogDiv.appendChild(remainTableDiv);
+    timeLogDiv.appendChild(readyTableDiv);
+    timeLogDiv.appendChild(runningTableDiv);
+    timeLogDiv.appendChild(blockTableDiv);
+    timeLogDiv.appendChild(terminateTableDiv);
+
+    document.body.appendChild(timeLogDiv);
+
+    if (index == timeLog.length - 1) {
+        clearInterval(interval);
+        console.log("end");
+    }
+    else {
+        index++;
+    }
+}
 
 document.querySelector(".calculate").onclick = () => {  //event listener for calculate
 
@@ -548,11 +657,28 @@ document.querySelector(".calculate").onclick = () => {  //event listener for cal
 
     setOutput(mainInput, mainOutput);
     showOutput(mainInput, mainOutput, outputDiv);
+
+    console.log(mainOutput.timeLog);
+    reduceTimeLog(mainOutput.timeLog);
+    console.log(reduceTimeLog(mainOutput.timeLog));
+
+    // anim(mainOutput.timeLog);
+
     document.body.appendChild(outputDiv);
 }
 
+function moveElement(value, from, to) { //if present in from and not in to
+    let index = from.indexOf(value);
+    if (index != -1) {
+        from.splice(index, 1);
+    }
+    if (to.indexOf(value) == -1) {
+        to.push(value);
+    }
+}
+
 function fcfs(input, utility, output) {
-    while (utility.done.some((element) => element == false)) {
+    /*while (utility.done.some((element) => element == false)) {
         let candidates = input.processId.filter(
             (element) => utility.done[element] == false && utility.returnTime[element] <= utility.currentTime
         );
@@ -577,6 +703,76 @@ function fcfs(input, utility, output) {
                 utility.returnTime[found] = utility.currentTime + currentBurstTime;
                 utility.currentProcessIndex[found]++;
             }
+        }
+    }*/
+    let currentTimeLog = new TimeLog();
+    currentTimeLog.remain = input.processId;
+    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+    currentTimeLog.time++;
+    while (utility.done.some((element) => element == false)) {
+        let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+        let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+        let candidates = candidatesRemain.concat(candidatesBlock);
+        candidates.forEach(element => {
+            moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+            moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+        });
+        if (candidates.length > 0) {
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        }
+        let found = -1;
+        if (currentTimeLog.running.length == 0) {
+            let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+            let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+            let candidates = candidatesRemain.concat(candidatesBlock);
+            candidates.forEach(element => {
+                moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+                moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+            });
+            if (candidates.length > 0) {
+                output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+            }
+            candidates = candidates.concat(currentTimeLog.ready)
+            if (candidates.length > 0) {
+                candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
+                found = candidates[0];
+                moveElement(found, currentTimeLog.ready, currentTimeLog.running);
+                output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                if (utility.start[found] == false) {
+                    utility.start[found] = true;
+                    output.responseTime[found] = utility.currentTime - input.arrivalTime[found];
+                }
+            }
+        }
+        else {
+            found = currentTimeLog.running[0];
+        }
+        utility.currentTime++;
+        currentTimeLog.time++;
+        if (found != -1) {
+            output.schedule.push([found + 1, 1]);
+            utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
+            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
+                utility.currentProcessIndex[found]++;
+                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
+                    utility.done[found] = true;
+                    output.completionTime[found] = utility.currentTime;
+                    moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                } else {
+                    utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
+                    utility.currentProcessIndex[found]++;
+                    moveElement(found, currentTimeLog.running, currentTimeLog.block);
+                    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                }
+            }
+            else {
+                output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+            }
+        }
+        else {
+            output.schedule.push([-1, 1]);
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
         }
     }
 }
@@ -673,8 +869,7 @@ function srjf(input, utility, output) {
                     utility.done[found] = true;
                     output.completionTime[found] = utility.currentTime;
                 } else {
-                    utility.returnTime[found] =
-                        utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
+                    utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                     utility.currentProcessIndex[found]++;
                 }
             }
