@@ -843,68 +843,115 @@ function ljf(input, utility, output) {
     }
 }
 function srjf(input, utility, output) {
+    let currentTimeLog = new TimeLog();
+    currentTimeLog.remain = input.processId;
+    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+    currentTimeLog.time++;
     while (utility.done.some((element) => element == false)) {
-        let candidates = input.processId.filter(
-            (element) => utility.done[element] == false && utility.returnTime[element] <= utility.currentTime
-        );
-        if (candidates.length == 0) {
-            utility.currentTime++;
-            output.schedule.push([-1, 1]);
-        } else {
+        let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+        let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+        let candidates = candidatesRemain.concat(candidatesBlock);
+        candidates.forEach(element => {
+            moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+            moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+        });
+        candidates = candidates.concat(currentTimeLog.ready);
+        if (candidates.length > 0) {
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        }
+        let found = -1;
+        if (candidates.length > 0) {
             candidates.sort((a, b) => utility.remainingBurstTime[a] - utility.remainingBurstTime[b]);
-            let found = candidates[0];
+            found = candidates[0];
+            moveElement(found, currentTimeLog.ready, currentTimeLog.running);
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
             if (utility.start[found] == false) {
                 utility.start[found] = true;
                 output.responseTime[found] = utility.currentTime - input.arrivalTime[found];
             }
+        }
+        utility.currentTime++;
+        currentTimeLog.time++;
+        if (found != -1) {
             output.schedule.push([found + 1, 1]);
-            utility.currentTime++;
-            utility.remainingBurstTime[found]--;
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
-            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
+            utility.remainingBurstTime[found]--;
+            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {     //if current process completed
                 utility.currentProcessIndex[found]++;
-                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
+                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {         //if last burst time
                     utility.done[found] = true;
                     output.completionTime[found] = utility.currentTime;
-                } else {
+                    moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                } else {    //if not last
                     utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                     utility.currentProcessIndex[found]++;
+                    moveElement(found, currentTimeLog.running, currentTimeLog.block);
                 }
             }
+            else {
+                moveElement(found, currentTimeLog.running, currentTimeLog.ready);
+            }
         }
+        else {
+            output.schedule.push([-1, 1]);
+        }
+        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
 }
 function lrjf(input, utility, output) {
+    let currentTimeLog = new TimeLog();
+    currentTimeLog.remain = input.processId;
+    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+    currentTimeLog.time++;
     while (utility.done.some((element) => element == false)) {
-        let candidates = input.processId.filter(
-            (element) => utility.done[element] == false && utility.returnTime[element] <= utility.currentTime
-        );
-        if (candidates.length == 0) {
-            utility.currentTime++;
-            output.schedule.push([-1, 1]);
-        } else {
+        let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+        let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+        let candidates = candidatesRemain.concat(candidatesBlock);
+        candidates.forEach(element => {
+            moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+            moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+        });
+        candidates = candidates.concat(currentTimeLog.ready);
+        if (candidates.length > 0) {
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        }
+        let found = -1;
+        if (candidates.length > 0) {
             candidates.sort((a, b) => utility.remainingBurstTime[b] - utility.remainingBurstTime[a]);
-            let found = candidates[0];
+            found = candidates[0];
+            moveElement(found, currentTimeLog.ready, currentTimeLog.running);
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
             if (utility.start[found] == false) {
                 utility.start[found] = true;
                 output.responseTime[found] = utility.currentTime - input.arrivalTime[found];
             }
+        }
+        utility.currentTime++;
+        currentTimeLog.time++;
+        if (found != -1) {
             output.schedule.push([found + 1, 1]);
-            utility.currentTime++;
-            utility.remainingBurstTime[found]--;
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
-            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
+            utility.remainingBurstTime[found]--;
+            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {     //if current process completed
                 utility.currentProcessIndex[found]++;
-                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
+                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {         //if last burst time
                     utility.done[found] = true;
                     output.completionTime[found] = utility.currentTime;
-                } else {
-                    utility.returnTime[found] =
-                        utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
+                    moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                } else {    //if not last
+                    utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                     utility.currentProcessIndex[found]++;
+                    moveElement(found, currentTimeLog.running, currentTimeLog.block);
                 }
             }
+            else {
+                moveElement(found, currentTimeLog.running, currentTimeLog.ready);
+            }
         }
+        else {
+            output.schedule.push([-1, 1]);
+        }
+        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
 }
 function rr(input, utility, output) {
@@ -1045,36 +1092,59 @@ function pnp(input, utility, output) {
     }
 }
 function pp(input, utility, output) {
+    let currentTimeLog = new TimeLog();
+    currentTimeLog.remain = input.processId;
+    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+    currentTimeLog.time++;
     while (utility.done.some((element) => element == false)) {
-        let candidates = input.processId.filter(
-            (element) => utility.done[element] == false && utility.returnTime[element] <= utility.currentTime
-        );
-        if (candidates.length == 0) {
-            utility.currentTime++;
-            output.schedule.push([-1, 1]);
-        } else {
+        let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+        let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+        let candidates = candidatesRemain.concat(candidatesBlock);
+        candidates.forEach(element => {
+            moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+            moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+        });
+        candidates = candidates.concat(currentTimeLog.ready);
+        if (candidates.length > 0) {
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        }
+        let found = -1;
+        if (candidates.length > 0) {
             candidates.sort((a, b) => priorityPreference * (input.priority[a] - input.priority[b]));
-            let found = candidates[0];
+            found = candidates[0];
+            moveElement(found, currentTimeLog.ready, currentTimeLog.running);
+            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
             if (utility.start[found] == false) {
                 utility.start[found] = true;
                 output.responseTime[found] = utility.currentTime - input.arrivalTime[found];
             }
+        }
+        utility.currentTime++;
+        currentTimeLog.time++;
+        if (found != -1) {
             output.schedule.push([found + 1, 1]);
-            utility.currentTime++;
-            utility.remainingBurstTime[found]--;
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
-            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
+            utility.remainingBurstTime[found]--;
+            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {     //if current process completed
                 utility.currentProcessIndex[found]++;
-                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
+                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {         //if last burst time
                     utility.done[found] = true;
                     output.completionTime[found] = utility.currentTime;
-                } else {
-                    utility.returnTime[found] =
-                        utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
+                    moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                } else {    //if not last
+                    utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                     utility.currentProcessIndex[found]++;
+                    moveElement(found, currentTimeLog.running, currentTimeLog.block);
                 }
             }
+            else {
+                moveElement(found, currentTimeLog.running, currentTimeLog.ready);
+            }
         }
+        else {
+            output.schedule.push([-1, 1]);
+        }
+        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
 }
 function hrrn(input, utility, output) {
