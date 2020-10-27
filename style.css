@@ -73,7 +73,7 @@ button {
 
 #algorithm-chart {
     width: 80%;
-    height: 500px;
+    height: 60vh;
 }
 
 #gantt-chart {
@@ -98,4 +98,17 @@ button {
 
 .preferences {
     list-style: none;
+}
+
+thead {
+    font-weight: bold;
+}
+
+#time-log-div {
+    height: 40vh;
+}
+
+#time-log-table-div {
+    display: flex;
+    justify-content: space-around;
 }

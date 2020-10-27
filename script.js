@@ -183,29 +183,52 @@ document.querySelector(".remove-btn").onclick = () => { //remove row event liste
     updateColspan();
 };
 //----------------before calculate
+
+class Input {
+    constructor() {
+        this.processId = [];
+        this.priority = [];
+        this.arrivalTime = [];
+        this.processTime = [];
+        this.processTimeLength = [];
+        this.totalBurstTime = [];
+        this.algorithm = "";
+        this.algorithmType = "";
+    }
+}
+class Utility {
+    constructor() {
+        this.remainingProcessTime = [];
+        this.remainingBurstTime = [];
+        this.currentProcessIndex = [];
+        this.start = [];
+        this.done = [];
+        this.returnTime = [];
+        this.currentTime = 0;
+    }
+}
+class Output {
+    constructor() {
+        this.completionTime = [];
+        this.turnAroundTime = [];
+        this.waitingTime = [];
+        this.responseTime = [];
+        this.schedule = [];
+        this.timeLog = [];
+    }
+}
+class TimeLog {
+    constructor() {
+        this.time = -1;
+        this.remain = [];
+        this.ready = [];
+        this.running = [];
+        this.block = [];
+        this.terminate = [];
+    }
+}
+
 function setInput(input) {
-    //set algorithm name and type
-    document.querySelectorAll("#algorithms input").forEach((element) => {
-        if (element.checked == true) {
-            switch (element.id) {
-                case 'fcfs':
-                case 'sjf':
-                case 'ljf':
-                case 'pnp':
-                case 'hrrn':
-                    input.algorithmType = "nonpreemptive";
-                    break;
-                case 'srjf':
-                case 'lrjf':
-                case 'pp':
-                    input.algorithmType = "preemptive";
-                    break;
-                case 'rr':
-                    input.algorithmType = "roundrobin";
-                    break;
-            }
-        }
-    });
     for (let i = 1; i <= process; i++) {
         input.processId.push(i - 1);
         let rowCells1 = document.querySelector(".main-table").rows[2 * i - 1].cells;
@@ -308,7 +331,6 @@ function showGanttChart(output, outputDiv) {
         chart.draw(dataTable, options);
     }
     outputDiv.appendChild(ganttChart);
-
 }
 
 function showTimelineChart(output, outputDiv) {
@@ -343,10 +365,83 @@ function showTimelineChart(output, outputDiv) {
         dataTable.addColumn({ type: "number", id: "Start" });
         dataTable.addColumn({ type: "number", id: "End" });
         dataTable.addRows(timelineChartData);
-
         chart.draw(dataTable);
     }
     outputDiv.appendChild(timelineChart);
+}
+
+function showFinalTable(input, output, outputDiv) {
+    let finalTableHeading = document.createElement("h3");
+    finalTableHeading.innerHTML = "Final Table";
+    outputDiv.appendChild(finalTableHeading);
+    let table = document.createElement("table");
+    table.classList.add("final-table");
+    let thead = table.createTHead();
+    let row = thead.insertRow(0);
+    let headings = [
+        "Process",
+        "Arrival Time",
+        "Total Burst Time",
+        "Completion Time",
+        "Turn Around Time",
+        "Waiting Time",
+        "Response Time",
+    ];
+    headings.forEach((element, index) => {
+        let cell = row.insertCell(index);
+        cell.innerHTML = element;
+    });
+    let tbody = table.createTBody();
+    for (let i = 0; i < process; i++) {
+        let row = tbody.insertRow(i);
+        let cell = row.insertCell(0);
+        cell.innerHTML = "P" + (i + 1);
+        cell = row.insertCell(1);
+        cell.innerHTML = input.arrivalTime[i];
+        cell = row.insertCell(2);
+        cell.innerHTML = input.totalBurstTime[i];
+        cell = row.insertCell(3);
+        cell.innerHTML = output.completionTime[i];
+        cell = row.insertCell(4);
+        cell.innerHTML = output.turnAroundTime[i];
+        cell = row.insertCell(5);
+        cell.innerHTML = output.waitingTime[i];
+        cell = row.insertCell(6);
+        cell.innerHTML = output.responseTime[i];
+    }
+    outputDiv.appendChild(table);
+
+    let tbt = 0;
+    input.totalBurstTime.forEach((element) => (tbt += element));
+    let lastct = 0;
+    output.completionTime.forEach((element) => (lastct = Math.max(lastct, element)));
+    let cpu = document.createElement("p");
+    cpu.innerHTML = "CPU Utilization : " + (tbt / lastct) * 100 + "%";
+    outputDiv.appendChild(cpu);
+    let tp = document.createElement("p");
+    tp.innerHTML = "Throughput : " + process / lastct;
+    outputDiv.appendChild(tp);
+}
+
+function setAlgorithmNameType(input, algorithm) {
+    input.algorithm = algorithm;
+    switch (algorithm) {
+        case 'fcfs':
+        case 'sjf':
+        case 'ljf':
+        case 'pnp':
+        case 'hrrn':
+            input.algorithmType = "nonpreemptive";
+            break;
+        case 'srjf':
+        case 'lrjf':
+        case 'pp':
+            input.algorithmType = "preemptive";
+            break;
+        case 'rr':
+            input.algorithmType = "roundrobin";
+            break;
+    }
 }
 
 function showAlgorithmChart(outputDiv) {
@@ -367,7 +462,7 @@ function showAlgorithmChart(outputDiv) {
         let chartOutput = new Output();
         setInput(chartInput);
         setUtility(chartInput, chartUtility);
-        chartInput.algorithm = currentAlgorithm;
+        setAlgorithmNameType(chartInput, currentAlgorithm);
         if (currentAlgorithm == 'rr') {
             roundrobin(chartInput, chartUtility, chartOutput);
         } else {
@@ -415,63 +510,116 @@ function showAlgorithmChart(outputDiv) {
     outputDiv.appendChild(algorithmChart);
 }
 
-function showFinalTable(input, output, outputDiv) {
-    let finalTableHeading = document.createElement("h3");
-    finalTableHeading.innerHTML = "Final Table";
-    outputDiv.appendChild(finalTableHeading);
-    let table = document.createElement("table");
-    table.classList.add("final-table");
-    let thead = table.createTHead();
-    let row = thead.insertRow(0);
-    let headings = [
-        "Process",
-        "Arrival Time",
-        "Total Burst Time",
-        "Completion Time",
-        "Turn Around Time",
-        "Waiting Time",
-        "Response Time",
-    ];
-    headings.forEach((element, index) => {
-        let cell = row.insertCell(index);
-        cell.innerHTML = element;
-    });
-    for (let i = 0; i < process; i++) {
-        let row = table.insertRow(i + 1);
-        let cell = row.insertCell(0);
-        cell.innerHTML = "P" + (i + 1);
-        cell = row.insertCell(1);
-        cell.innerHTML = input.arrivalTime[i];
-        cell = row.insertCell(2);
-        cell.innerHTML = input.totalBurstTime[i];
-        cell = row.insertCell(3);
-        cell.innerHTML = output.completionTime[i];
-        cell = row.insertCell(4);
-        cell.innerHTML = output.turnAroundTime[i];
-        cell = row.insertCell(5);
-        cell.innerHTML = output.waitingTime[i];
-        cell = row.insertCell(6);
-        cell.innerHTML = output.responseTime[i];
-    }
-    outputDiv.appendChild(table);
+function nextTimeLog(timeLog) {
+    let timeLogTableDiv = document.getElementById("time-log-table-div");
+    timeLogTableDiv.innerHTML = "";
 
-    let tbt = 0;
-    input.totalBurstTime.forEach((element) => (tbt += element));
-    let lastct = 0;
-    output.completionTime.forEach((element) => (lastct = Math.max(lastct, element)));
-    let cpu = document.createElement("p");
-    cpu.innerHTML = "CPU Utilization : " + (tbt / lastct) * 100 + "%";
-    outputDiv.appendChild(cpu);
-    let tp = document.createElement("p");
-    tp.innerHTML = "Throughput : " + process / lastct;
-    outputDiv.appendChild(tp);
+    let remainTable = document.createElement("table");
+    remainTable.id = "remain-table";
+    let remainTableHead = remainTable.createTHead();
+    let remainTableHeadRow = remainTableHead.insertRow(0);
+    let remainTableHeading = remainTableHeadRow.insertCell(0);
+    remainTableHeading.innerHTML = "Remain";
+    let remainTableBody = remainTable.createTBody();
+    for (let i = 0; i < timeLog.remain.length; i++) {
+        let remainTableBodyRow = remainTableBody.insertRow(i);
+        let remainTableValue = remainTableBodyRow.insertCell(0);
+        remainTableValue.innerHTML = 'P' + (timeLog.remain[i] + 1);
+    }
+    timeLogTableDiv.appendChild(remainTable);
+
+    let readyTable = document.createElement("table");
+    readyTable.id = "ready-table";
+    let readyTableHead = readyTable.createTHead();
+    let readyTableHeadRow = readyTableHead.insertRow(0);
+    let readyTableHeading = readyTableHeadRow.insertCell(0);
+    readyTableHeading.innerHTML = "Ready";
+    let readyTableBody = readyTable.createTBody();
+    for (let i = 0; i < timeLog.ready.length; i++) {
+        let readyTableBodyRow = readyTableBody.insertRow(i);
+        let readyTableValue = readyTableBodyRow.insertCell(0);
+        readyTableValue.innerHTML = 'P' + (timeLog.ready[i] + 1);
+    }
+    timeLogTableDiv.appendChild(readyTable);
+
+    let runningTable = document.createElement("table");
+    runningTable.id = "running-table";
+    let runningTableHead = runningTable.createTHead();
+    let runningTableHeadRow = runningTableHead.insertRow(0);
+    let runningTableHeading = runningTableHeadRow.insertCell(0);
+    runningTableHeading.innerHTML = "Running";
+    let runningTableBody = runningTable.createTBody();
+    for (let i = 0; i < timeLog.running.length; i++) {
+        let runningTableBodyRow = runningTableBody.insertRow(i);
+        let runningTableValue = runningTableBodyRow.insertCell(0);
+        runningTableValue.innerHTML = 'P' + (timeLog.running[i] + 1);
+    }
+    timeLogTableDiv.appendChild(runningTable);
+
+    let blockTable = document.createElement("table");
+    blockTable.id = "block-table";
+    let blockTableHead = blockTable.createTHead();
+    let blockTableHeadRow = blockTableHead.insertRow(0);
+    let blockTableHeading = blockTableHeadRow.insertCell(0);
+    blockTableHeading.innerHTML = "Block";
+    let blockTableBody = blockTable.createTBody();
+    for (let i = 0; i < timeLog.block.length; i++) {
+        let blockTableBodyRow = blockTableBody.insertRow(i);
+        let blockTableValue = blockTableBodyRow.insertCell(0);
+        blockTableValue.innerHTML = 'P' + (timeLog.block[i] + 1);
+    }
+    timeLogTableDiv.appendChild(blockTable);
+
+    let terminateTable = document.createElement("table");
+    terminateTable.id = "terminate-table";
+    let terminateTableHead = terminateTable.createTHead();
+    let terminateTableHeadRow = terminateTableHead.insertRow(0);
+    let terminateTableHeading = terminateTableHeadRow.insertCell(0);
+    terminateTableHeading.innerHTML = "Terminate";
+    let terminateTableBody = terminateTable.createTBody();
+    for (let i = 0; i < timeLog.terminate.length; i++) {
+        let terminateTableBodyRow = terminateTableBody.insertRow(i);
+        let terminateTableValue = terminateTableBodyRow.insertCell(0);
+        terminateTableValue.innerHTML = 'P' + (timeLog.terminate[i] + 1);
+    }
+    timeLogTableDiv.appendChild(terminateTable);
+
+    let timeLogTime = document.getElementById("time-log-time");
+    timeLogTime.innerHTML = "Time : " + timeLog.time;
+}
+
+function showTimeLog(outputDiv) {
+    let timeLogDiv = document.createElement("div");
+    timeLogDiv.id = "time-log-div";
+    let startTimeLogButton = document.createElement("button");
+    startTimeLogButton.id = "start-time-log";
+    startTimeLogButton.innerHTML = "Start Time Log";
+    timeLogDiv.appendChild(startTimeLogButton);
+    let timeLogTableDiv = document.createElement("div");
+    timeLogTableDiv.id = "time-log-table-div";
+    timeLogDiv.appendChild(timeLogTableDiv);
+    let timeLogTime = document.createElement("p");
+    timeLogTime.id = "time-log-time";
+    timeLogDiv.appendChild(timeLogTime);
+    outputDiv.appendChild(timeLogDiv);
 }
 
 function showOutput(input, output, outputDiv) {
     showGanttChart(output, outputDiv);
     showTimelineChart(output, outputDiv);
     showFinalTable(input, output, outputDiv);
+    reduceTimeLog(output.timeLog);
+    showTimeLog(outputDiv);
     showAlgorithmChart(outputDiv);
+    document.querySelector("#start-time-log").onclick = () => {
+        let index = 0;
+        let interval = setInterval(() => {
+            nextTimeLog(output.timeLog[index++]);
+            if (index == output.timeLog.length) {
+                clearInterval(interval);
+            }
+        }, 500);
+    };
 }
 
 function reduceTimeLog(timeLog) {
@@ -488,76 +636,6 @@ function reduceTimeLog(timeLog) {
         newTimeLog.push(timeLog[j]);
     }
     return newTimeLog;
-}
-
-class Input {
-    constructor() {
-        this.processId = [];
-        this.priority = [];
-        this.arrivalTime = [];
-        this.processTime = [];
-        this.processTimeLength = [];
-        this.totalBurstTime = [];
-        this.algorithm = "";
-        this.algorithmType = "";
-    }
-}
-class Utility {
-    constructor() {
-        this.remainingProcessTime = [];
-        this.remainingBurstTime = [];
-        this.currentProcessIndex = [];
-        this.start = [];
-        this.done = [];
-        this.returnTime = [];
-        this.currentTime = 0;
-    }
-}
-class Output {
-    constructor() {
-        this.completionTime = [];
-        this.turnAroundTime = [];
-        this.waitingTime = [];
-        this.responseTime = [];
-        this.schedule = [];
-        this.timeLog = [];
-    }
-}
-class TimeLog {
-    constructor() {
-        this.time = -1;
-        this.remain = [];
-        this.ready = [];
-        this.running = [];
-        this.block = [];
-        this.terminate = [];
-    }
-}
-document.querySelector(".calculate").onclick = () => { //event listener for calculate
-    document.getElementById("output").remove();
-    let outputDiv = document.createElement("div");
-    outputDiv.id = "output";
-    let mainInput = new Input();
-    let mainUtility = new Utility();
-    let mainOutput = new Output();
-    setInput(mainInput);
-    setUtility(mainInput, mainUtility);
-    document.querySelectorAll("#algorithms input").forEach((element) => {
-        if (element.checked == true) {
-            mainInput.algorithm = element.id;
-            if (element.id == 'rr') {
-                roundrobin(mainInput, mainUtility, mainOutput);
-            } else {
-                algo(mainInput, mainUtility, mainOutput);
-            }
-        }
-    });
-    setOutput(mainInput, mainOutput);
-    showOutput(mainInput, mainOutput, outputDiv);
-    console.log(mainOutput.timeLog);
-    reduceTimeLog(mainOutput.timeLog);
-    console.log(reduceTimeLog(mainOutput.timeLog));
-    document.body.appendChild(outputDiv);
 }
 
 function moveElement(value, from, to) { //if present in from and not in to
@@ -638,7 +716,7 @@ function algo(input, utility, output) {
                     utility.currentProcessIndex[found]++;
                     moveElement(found, currentTimeLog.running, currentTimeLog.block);
                 }
-            } else if (input.algorithm.type == "preemptive") {
+            } else if (input.algorithmType == "preemptive") {
                 moveElement(found, currentTimeLog.running, currentTimeLog.ready);
             }
         } else {
@@ -727,4 +805,26 @@ function roundrobin(input, utility, output) {
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
+}
+
+document.querySelector(".calculate").onclick = () => { //event listener for calculate
+    let outputDiv = document.getElementById("output");
+    outputDiv.innerHTML = "";
+    let mainInput = new Input();
+    let mainUtility = new Utility();
+    let mainOutput = new Output();
+    setInput(mainInput);
+    setUtility(mainInput, mainUtility);
+    document.querySelectorAll("#algorithms input").forEach((element) => {
+        if (element.checked == true) {
+            setAlgorithmNameType(mainInput, element.id);
+            if (element.id == 'rr') {
+                roundrobin(mainInput, mainUtility, mainOutput);
+            } else {
+                algo(mainInput, mainUtility, mainOutput);
+            }
+        }
+    });
+    setOutput(mainInput, mainOutput);
+    showOutput(mainInput, mainOutput, outputDiv);
 }
