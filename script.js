@@ -12,6 +12,7 @@ document.getElementById("priority-toggle-btn").onclick = () => {
 
 //when radio changed, show/hide time quantum input and show/hide priority column
 let radios = document.querySelectorAll("#algorithms input");
+
 function checkTimeQuantumInput() {
     radios.forEach((radio) => {
         if (radio.checked == true) {
@@ -24,6 +25,7 @@ function checkTimeQuantumInput() {
         }
     });
 }
+
 function checkPriorityCell() {
     radios.forEach((radio) => {
         if (radio.checked == true) {
@@ -49,6 +51,7 @@ radios.forEach((radio) =>
 
 //resize burst time rows size on +/-
 let process = 1;
+
 function gcd(x, y) {
     while (y) {
         let t = y;
@@ -57,9 +60,11 @@ function gcd(x, y) {
     }
     return x;
 }
+
 function lcm(x, y) {
     return (x * y) / gcd(x, y);
 }
+
 function lcmAll() {
     let result = 1;
     for (let i = 0; i < process; i++) {
@@ -68,7 +73,7 @@ function lcmAll() {
     return result;
 }
 
-function updateColspan() {  //update burst time cell colspan
+function updateColspan() { //update burst time cell colspan
     let totalColumns = lcmAll();
     let processHeading = document.querySelector("thead .process-time");
     processHeading.setAttribute("colspan", totalColumns);
@@ -88,7 +93,7 @@ function updateColspan() {  //update burst time cell colspan
     }
 }
 
-function addremove() {  //add remove bt-to time pair add event listener
+function addremove() { //add remove bt-to time pair add event listener
     let processTimes = [];
     let table = document.querySelector(".main-table");
     for (let i = 0; i < process; i++) {
@@ -148,7 +153,7 @@ function addremove() {  //add remove bt-to time pair add event listener
 }
 addremove();
 
-document.querySelector(".add-btn").onclick = () => {    //add row event listener
+document.querySelector(".add-btn").onclick = () => { //add row event listener
     process++;
     let rowHTML1 = `
                           <td class="process-id" rowspan="2">P${process}</td>
@@ -177,10 +182,30 @@ document.querySelector(".remove-btn").onclick = () => { //remove row event liste
     }
     updateColspan();
 };
-
 //----------------before calculate
-
 function setInput(input) {
+    //set algorithm name and type
+    document.querySelectorAll("#algorithms input").forEach((element) => {
+        if (element.checked == true) {
+            switch (element.id) {
+                case 'fcfs':
+                case 'sjf':
+                case 'ljf':
+                case 'pnp':
+                case 'hrrn':
+                    input.algorithmType = "nonpreemptive";
+                    break;
+                case 'srjf':
+                case 'lrjf':
+                case 'pp':
+                    input.algorithmType = "preemptive";
+                    break;
+                case 'rr':
+                    input.algorithmType = "roundrobin";
+                    break;
+            }
+        }
+    });
     for (let i = 1; i <= process; i++) {
         input.processId.push(i - 1);
         let rowCells1 = document.querySelector(".main-table").rows[2 * i - 1].cells;
@@ -261,6 +286,7 @@ function showGanttChart(output, outputDiv) {
 
     google.charts.load("current", { packages: ["timeline"] });
     google.charts.setOnLoadCallback(drawGanttChart);
+
     function drawGanttChart() {
         var container = document.getElementById("gantt-chart");
         var chart = new google.visualization.Timeline(container);
@@ -284,6 +310,7 @@ function showGanttChart(output, outputDiv) {
     outputDiv.appendChild(ganttChart);
 
 }
+
 function showTimelineChart(output, outputDiv) {
     let timelineChartHeading = document.createElement("h3");
     timelineChartHeading.innerHTML = "Timeline Chart";
@@ -306,6 +333,7 @@ function showTimelineChart(output, outputDiv) {
 
     google.charts.load("current", { packages: ["timeline"] });
     google.charts.setOnLoadCallback(drawTimelineChart);
+
     function drawTimelineChart() {
         var container = document.getElementById("timeline-chart");
         var chart = new google.visualization.Timeline(container);
@@ -320,6 +348,7 @@ function showTimelineChart(output, outputDiv) {
     }
     outputDiv.appendChild(timelineChart);
 }
+
 function showAlgorithmChart(outputDiv) {
     let algorithmChart = document.createElement("div");
     algorithmChart.id = "algorithm-chart";
@@ -332,16 +361,16 @@ function showAlgorithmChart(outputDiv) {
         "Response Time",
     ]);
     let algorithmArray = ["fcfs", "sjf", "srjf", "rr", "ljf", "lrjf", "pnp", "pp", "hrrn"];
-    algorithmArray.forEach((currentAlgorithm, index) => {
+    algorithmArray.forEach(currentAlgorithm => {
         let chartInput = new Input();
         let chartUtility = new Utility();
         let chartOutput = new Output();
         setInput(chartInput);
         setUtility(chartInput, chartUtility);
+        chartInput.algorithm = currentAlgorithm;
         if (currentAlgorithm == 'rr') {
             roundrobin(chartInput, chartUtility, chartOutput);
-        }
-        else {
+        } else {
             algo(chartInput, chartUtility, chartOutput);
         }
         setOutput(chartInput, chartOutput);
@@ -369,13 +398,13 @@ function showAlgorithmChart(outputDiv) {
     });
     google.charts.load("current", { packages: ["bar"] });
     google.charts.setOnLoadCallback(drawAlgorithmChart);
+
     function drawAlgorithmChart() {
         var data = google.visualization.arrayToDataTable(algorithmChartData);
         var options = {
             chart: {
                 title: "Algorithms",
-                subtitle:
-                    "Average Completion Time,Turn Around Time, Waiting Time, Response Time",
+                subtitle: "Average Completion Time,Turn Around Time, Waiting Time, Response Time",
             },
         };
         var chart = new google.charts.Bar(
@@ -385,6 +414,7 @@ function showAlgorithmChart(outputDiv) {
     }
     outputDiv.appendChild(algorithmChart);
 }
+
 function showFinalTable(input, output, outputDiv) {
     let finalTableHeading = document.createElement("h3");
     finalTableHeading.innerHTML = "Final Table";
@@ -436,6 +466,7 @@ function showFinalTable(input, output, outputDiv) {
     tp.innerHTML = "Throughput : " + process / lastct;
     outputDiv.appendChild(tp);
 }
+
 function showOutput(input, output, outputDiv) {
     showGanttChart(output, outputDiv);
     showTimelineChart(output, outputDiv);
@@ -445,7 +476,8 @@ function showOutput(input, output, outputDiv) {
 
 function reduceTimeLog(timeLog) {
     let timeLogLength = timeLog.length;
-    let newTimeLog = [], j = 0;
+    let newTimeLog = [],
+        j = 0;
     for (let i = 0; i < timeLogLength - 1; i++) {
         if (timeLog[i].time != timeLog[i + 1].time) {
             newTimeLog.push(timeLog[j]);
@@ -501,54 +533,30 @@ class TimeLog {
         this.terminate = [];
     }
 }
-
-document.querySelector(".calculate").onclick = () => {  //event listener for calculate
-
+document.querySelector(".calculate").onclick = () => { //event listener for calculate
     document.getElementById("output").remove();
     let outputDiv = document.createElement("div");
     outputDiv.id = "output";
-
     let mainInput = new Input();
     let mainUtility = new Utility();
     let mainOutput = new Output();
     setInput(mainInput);
     setUtility(mainInput, mainUtility);
-
     document.querySelectorAll("#algorithms input").forEach((element) => {
         if (element.checked == true) {
             mainInput.algorithm = element.id;
-            switch (element.id) {
-                case 'fcfs':
-                case 'sjf':
-                case 'ljf':
-                case 'pnp':
-                case 'hrrn':
-                    mainInput.algorithmType = "nonpreemptive";
-                    break;
-                case 'srjf':
-                case 'lrjf':
-                case 'pp':
-                    mainInput.algorithmType = "preemptive";
-                    break;
-                case 'rr':
-                    mainInput.algorithmType = "roundrobin";
-                    break;
-            }
             if (element.id == 'rr') {
                 roundrobin(mainInput, mainUtility, mainOutput);
-            }
-            else {
+            } else {
                 algo(mainInput, mainUtility, mainOutput);
             }
         }
     });
     setOutput(mainInput, mainOutput);
     showOutput(mainInput, mainOutput, outputDiv);
-
     console.log(mainOutput.timeLog);
     reduceTimeLog(mainOutput.timeLog);
     console.log(reduceTimeLog(mainOutput.timeLog));
-
     document.body.appendChild(outputDiv);
 }
 
@@ -559,28 +567,6 @@ function moveElement(value, from, to) { //if present in from and not in to
     }
     if (to.indexOf(value) == -1) {
         to.push(value);
-    }
-}
-function getPriority(a, b, input, utility) {
-    switch (input.algorithm) {
-        case 'fcfs':
-            return utility.returnTime[a] - utility.returnTime[b];
-        case 'sjf':
-        case 'srjf':
-            return utility.remainingBurstTime[a] - utility.remainingBurstTime[b];
-        case 'ljf':
-        case 'lrjf':
-            return utility.remainingBurstTime[b] - utility.remainingBurstTime[a];
-        case 'pnp':
-        case 'pp':
-            return priorityPreference * (input.priority[a] - input.priority[b]);
-        case 'hrrn':
-            function responseRatio(id) {
-                let s = utility.remainingBurstTime[id];
-                let w = utility.currentTime - input.arrivalTime[id] - s;
-                return 1 + w / s;
-            }
-            return responseRatio(b) - responseRatio(a);
     }
 }
 
@@ -604,9 +590,29 @@ function algo(input, utility, output) {
         let found = -1;
         if (currentTimeLog.running.length == 1) {
             found = currentTimeLog.running[0];
-        }
-        else if (candidates.length > 0) {
-            candidates.sort((a, b) => { getPriority(a, b, input, utility); });
+        } else if (candidates.length > 0) {
+            candidates.sort((a, b) => {
+                switch (input.algorithm) {
+                    case 'fcfs':
+                        return utility.returnTime[a] - utility.returnTime[b];
+                    case 'sjf':
+                    case 'srjf':
+                        return utility.remainingBurstTime[a] - utility.remainingBurstTime[b];
+                    case 'ljf':
+                    case 'lrjf':
+                        return utility.remainingBurstTime[b] - utility.remainingBurstTime[a];
+                    case 'pnp':
+                    case 'pp':
+                        return priorityPreference * (input.priority[a] - input.priority[b]);
+                    case 'hrrn':
+                        function responseRatio(id) {
+                            let s = utility.remainingBurstTime[id];
+                            let w = utility.currentTime - input.arrivalTime[id] - s;
+                            return 1 + w / s;
+                        }
+                        return responseRatio(b) - responseRatio(a);
+                }
+            });
             found = candidates[0];
             moveElement(found, currentTimeLog.ready, currentTimeLog.running);
             output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
@@ -621,29 +627,38 @@ function algo(input, utility, output) {
             output.schedule.push([found + 1, 1]);
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
             utility.remainingBurstTime[found]--;
-            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {     //if current process completed
+            if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
                 utility.currentProcessIndex[found]++;
-                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {         //if last burst time
+                if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
                     utility.done[found] = true;
                     output.completionTime[found] = utility.currentTime;
                     moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
-                } else {    //if not last
+                } else {
                     utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                     utility.currentProcessIndex[found]++;
                     moveElement(found, currentTimeLog.running, currentTimeLog.block);
                 }
-            }
-            else if (algorithm.type == "preemptive") {
+            } else if (input.algorithm.type == "preemptive") {
                 moveElement(found, currentTimeLog.running, currentTimeLog.ready);
             }
-        }
-        else {
+        } else {
             output.schedule.push([-1, 1]);
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
 }
+
 function roundrobin(input, utility, output) {
+    function updateReadyQueue(currentTimeLog, input, utility) {
+        let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
+        let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
+        let candidates = candidatesRemain.concat(candidatesBlock);
+        candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
+        candidates.forEach(element => {
+            moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
+            moveElement(element, currentTimeLog.block, currentTimeLog.ready);
+        });
+    }
     let currentTimeLog = new TimeLog();
     currentTimeLog.remain = input.processId;
     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
@@ -669,12 +684,10 @@ function roundrobin(input, utility, output) {
     });
     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     while (utility.done.some((element) => element == false)) {
-
         let found = -1;
         if (currentTimeLog.running.length == 1) {
             found = currentTimeLog.running[0];
-        }
-        else if (currentTimeLog.ready.length > 0) { //new process in running
+        } else if (currentTimeLog.ready.length > 0) { //new process in running
             found = currentTimeLog.ready[0];
             moveElement(found, currentTimeLog.ready, currentTimeLog.running);
             output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
@@ -691,49 +704,26 @@ function roundrobin(input, utility, output) {
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
             remainingTimeRunning--;
             if (remainingTimeRunning == 0) {
-                if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {     //if current process completed
+                if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
                     utility.currentProcessIndex[found]++;
-                    if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {//if last burst time
+                    if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
                         utility.done[found] = true;
                         output.completionTime[found] = utility.currentTime;
                         moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
-                    } else {//if not last
+                    } else {
                         utility.returnTime[found] = utility.currentTime + input.processTime[found][utility.currentProcessIndex[found]];
                         utility.currentProcessIndex[found]++;
                         moveElement(found, currentTimeLog.running, currentTimeLog.block);
                     }
-                    let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
-                    let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
-                    let candidates = candidatesRemain.concat(candidatesBlock);
-                    candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
-                    candidates.forEach(element => {
-                        moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
-                        moveElement(element, currentTimeLog.block, currentTimeLog.ready);
-                    });
-                }
-                else {
-                    let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
-                    let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
-                    let candidates = candidatesRemain.concat(candidatesBlock);
-                    candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
-                    candidates.forEach(element => {
-                        moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
-                        moveElement(element, currentTimeLog.block, currentTimeLog.ready);
-                    });
+                    updateReadyQueue(currentTimeLog, input, utility);
+                } else {
+                    updateReadyQueue(currentTimeLog, input, utility);
                     moveElement(found, currentTimeLog.running, currentTimeLog.ready);
                 }
             }
-        }
-        else {
+        } else {
             output.schedule.push([-1, 1]);
-            let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= utility.currentTime);
-            let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= utility.currentTime);
-            let candidates = candidatesRemain.concat(candidatesBlock);
-            candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
-            candidates.forEach(element => {
-                moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
-                moveElement(element, currentTimeLog.block, currentTimeLog.ready);
-            });
+            updateReadyQueue(currentTimeLog, input, utility);
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
