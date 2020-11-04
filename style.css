@@ -71,9 +71,9 @@ button {
     border: 1px solid white;
 }
 
-#algorithm-chart {
+#algorithm-chart-div {
     width: 80%;
-    height: 60vh;
+    height: 50%;
 }
 
 #gantt-chart {

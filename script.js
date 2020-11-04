@@ -445,17 +445,13 @@ function setAlgorithmNameType(input, algorithm) {
 }
 
 function showAlgorithmChart(outputDiv) {
-    let algorithmChart = document.createElement("div");
-    algorithmChart.id = "algorithm-chart";
-    let algorithmChartData = [];
-    algorithmChartData.push([
-        "Algorithm",
-        "Completion Time",
-        "Turn Around Time",
-        "Waiting Time",
-        "Response Time",
-    ]);
     let algorithmArray = ["fcfs", "sjf", "srjf", "rr", "ljf", "lrjf", "pnp", "pp", "hrrn"];
+    let algorithmChartData = [
+        [],
+        [],
+        [],
+        []
+    ];
     algorithmArray.forEach(currentAlgorithm => {
         let chartInput = new Input();
         let chartUtility = new Utility();
@@ -489,25 +485,65 @@ function showAlgorithmChart(outputDiv) {
             avgrt += element;
         });
         avgrt /= process;
-        algorithmChartData.push([currentAlgorithm, avgct, avgtat, avgwt, avgrt]);
+        algorithmChartData[0].push(avgct);
+        algorithmChartData[1].push(avgtat);
+        algorithmChartData[2].push(avgwt);
+        algorithmChartData[3].push(avgrt);
     });
-    google.charts.load("current", { packages: ["bar"] });
-    google.charts.setOnLoadCallback(drawAlgorithmChart);
-
-    function drawAlgorithmChart() {
-        var data = google.visualization.arrayToDataTable(algorithmChartData);
-        var options = {
-            chart: {
-                title: "Algorithms",
-                subtitle: "Average Completion Time,Turn Around Time, Waiting Time, Response Time",
+    let algorithmChartCanvas = document.createElement('canvas');
+    algorithmChartCanvas.id = "algorithm-chart";
+    let algorithmChartDiv = document.createElement('div');
+    algorithmChartDiv.id = "algorithm-chart-div";
+    algorithmChartDiv.style.height = "40vh";
+    algorithmChartDiv.style.width = "80%";
+    algorithmChartDiv.appendChild(algorithmChartCanvas);
+    outputDiv.appendChild(algorithmChartDiv);
+    new Chart(document.getElementById('algorithm-chart'), {
+        type: 'bar',
+        data: {
+            labels: algorithmArray,
+            datasets: [{
+                    label: "Completion Time",
+                    backgroundColor: '#3366CC',
+                    data: algorithmChartData[0]
+                },
+                {
+                    label: "Turn Around Time",
+                    backgroundColor: '#DC3912',
+                    data: algorithmChartData[1]
+                },
+                {
+                    label: "Waiting Time",
+                    backgroundColor: '#FF9900',
+                    data: algorithmChartData[2]
+                },
+                {
+                    label: "Response Time",
+                    backgroundColor: '#109618',
+                    data: algorithmChartData[3]
+                }
+            ]
+        },
+        options: {
+            title: {
+                display: true,
+                text: ['Algorithm', 'Comparison of Completion, Turn Around, Waiting and Response Time']
             },
-        };
-        var chart = new google.charts.Bar(
-            document.getElementById("algorithm-chart")
-        );
-        chart.draw(data, google.charts.Bar.convertOptions(options));
-    }
-    outputDiv.appendChild(algorithmChart);
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                labels: {
+                    fontColor: 'black'
+                }
+            }
+        }
+    });
 }
 
 function nextTimeLog(timeLog) {
