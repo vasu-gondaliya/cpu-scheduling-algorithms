@@ -669,6 +669,7 @@ function algo(input, utility, output) {
         if (currentTimeLog.running.length == 1) {
             found = currentTimeLog.running[0];
         } else if (candidates.length > 0) {
+            candidates.sort();
             candidates.sort((a, b) => {
                 switch (input.algorithm) {
                     case 'fcfs':
