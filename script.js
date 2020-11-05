@@ -49,6 +49,35 @@ radios.forEach((radio) =>
     })
 );
 
+function inputOnChange() {
+    let inputs = document.querySelectorAll('input');
+    inputs.forEach((input) => {
+        if (input.type == 'number') {
+            input.onchange = () => {
+                let inputVal = Number(input.value);
+                let isInt = Number.isInteger(inputVal);
+                if (input.parentNode.classList.contains('arrival-time')) //min 0 : arrival time
+                {
+                    if (!isInt || (isInt && inputVal < 0)) {
+                        input.value = 0;
+                    } else {
+                        input.value = inputVal;
+                    }
+                } else //min 1 : time quantum, priority, process time
+                {
+                    if (!isInt || (isInt && inputVal < 1)) {
+                        input.value = 1;
+                    } else {
+                        input.value = inputVal;
+                    }
+                }
+            }
+        }
+    });
+}
+
+inputOnChange(); //onchange EventListener for input
+
 //resize burst time rows size on +/-
 let process = 1;
 
@@ -93,7 +122,7 @@ function updateColspan() { //update burst time cell colspan
     }
 }
 
-function addremove() { //add remove bt-to time pair add event listener
+function addremove() { //add remove bt-io time pair add event listener
     let processTimes = [];
     let table = document.querySelector(".main-table");
     for (let i = 0; i < process; i++) {
@@ -128,6 +157,7 @@ function addremove() { //add remove bt-to time pair add event listener
             newcell4.classList.add("process-input");
             processTimes[i] += 2;
             updateColspan();
+            inputOnChange();
         };
     }
     let removebtns = document.querySelectorAll(".remove-process-btn");
@@ -172,6 +202,7 @@ document.querySelector(".add-btn").onclick = () => { //add row event listener
     checkPriorityCell();
     addremove();
     updateColspan();
+    inputOnChange();
 };
 document.querySelector(".remove-btn").onclick = () => { //remove row event listener
     let table = document.querySelector(".main-table");
@@ -181,7 +212,9 @@ document.querySelector(".remove-btn").onclick = () => { //remove row event liste
         process--;
     }
     updateColspan();
+    inputOnChange();
 };
+
 //----------------before calculate
 
 class Input {
