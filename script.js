@@ -388,9 +388,10 @@ function showGanttChart(output, outputDiv) {
         dataTable.addRows(ganttChartData);
 
         var options = {
+            width: startGantt * 40,
             timeline: {
                 showRowLabels: false,
-                avoidOverlappingGridLines: true
+                avoidOverlappingGridLines: false
             }
         };
         chart.draw(dataTable, options);
@@ -430,7 +431,10 @@ function showTimelineChart(output, outputDiv) {
         dataTable.addColumn({ type: "number", id: "Start" });
         dataTable.addColumn({ type: "number", id: "End" });
         dataTable.addRows(timelineChartData);
-        chart.draw(dataTable);
+        var options = {
+            width: startTimeline * 40,
+        };
+        chart.draw(dataTable, options);
     }
     outputDiv.appendChild(timelineChart);
 }

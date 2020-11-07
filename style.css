@@ -78,11 +78,16 @@ button {
 
 #gantt-chart {
     height: 100px;
-    width: 100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    width: 1200px;
 }
 
 #timeline-chart {
-    width: 100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    width: 1200px;
+    height: 200px;
 }
 
 #output {
