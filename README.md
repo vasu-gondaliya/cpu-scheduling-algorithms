@@ -4,6 +4,7 @@
 - 9 Algorithms are implemented.
 - Each process can have different number of CPU Burst Time and I/O Burst Time.
 - Gantt Chart and Timeline Chart for the given Schedule.
+- Context Switching Time.
 - Animation of the Time Log.
 - Comparison between all the algorithms wrt Average Completion Time, Turn Around Time, Waiting Time and Response Time.
 
@@ -57,3 +58,4 @@
 - CSS
 - Vanilla JS
 - Google Charts
+- Chart.js
