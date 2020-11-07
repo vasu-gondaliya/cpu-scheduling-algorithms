@@ -430,7 +430,7 @@ function showTimelineChart(output, outputDiv) {
         dataTable.addColumn({ type: "number", id: "Start" });
         dataTable.addColumn({ type: "number", id: "End" });
         dataTable.addRows(timelineChartData);
-        chart.draw(dataTable, options);
+        chart.draw(dataTable);
     }
     outputDiv.appendChild(timelineChart);
 }
