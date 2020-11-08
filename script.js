@@ -250,6 +250,7 @@ class TimeLog {
         this.running = [];
         this.block = [];
         this.terminate = [];
+        this.move = []; //0-remain->ready 1-ready->running 2-running->terminate 3-running->ready 4-running->block 5-block->ready
     }
 }
 
@@ -303,7 +304,7 @@ function reduceSchedule(schedule) {
         }
     }
     newSchedule.push([currentScheduleElement, currentScheduleLength]);
-    schedule = newSchedule;
+    return newSchedule;
 }
 
 function reduceTimeLog(timeLog) {
@@ -328,8 +329,8 @@ function setOutput(input, output) {
         output.turnAroundTime[i] = output.completionTime[i] - input.arrivalTime[i];
         output.waitingTime[i] = output.turnAroundTime[i] - input.totalBurstTime[i];
     }
-    reduceSchedule(output.schedule);
-    reduceTimeLog(output.timeLog);
+    output.schedule = reduceSchedule(output.schedule);
+    output.timeLog = reduceTimeLog(output.timeLog);
 }
 
 function showGanttChart(output, outputDiv) {
@@ -388,7 +389,7 @@ function showGanttChart(output, outputDiv) {
         dataTable.addRows(ganttChartData);
 
         var options = {
-            width: startGantt * 40,
+            width: Math.max(1200, startGantt * 40),
             timeline: {
                 showRowLabels: false,
                 avoidOverlappingGridLines: false
@@ -406,7 +407,7 @@ function showTimelineChart(output, outputDiv) {
     let timelineChartData = [];
     let startTimeline = 0;
     output.schedule.forEach((element) => {
-        if (element[0] > 0) { //process 
+        if (element[0] >= 0) { //process 
             timelineChartData.push([
                 "P" + element[0],
                 startTimeline * 1000,
@@ -432,7 +433,7 @@ function showTimelineChart(output, outputDiv) {
         dataTable.addColumn({ type: "number", id: "End" });
         dataTable.addRows(timelineChartData);
         var options = {
-            width: startTimeline * 40,
+            width: Math.max(1200, startTimeline * 40),
         };
         chart.draw(dataTable, options);
     }
@@ -611,9 +612,25 @@ function showAlgorithmChart(outputDiv) {
     });
 }
 
+function toggleTimeLogArrowColor(timeLog, color) {
+    let timeLogMove = ['remain-ready', 'ready-running', 'running-terminate', 'running-ready', 'running-block', 'block-ready'];
+    timeLog.move.forEach(element => {
+        document.getElementById(timeLogMove[element]).firstElementChild.setAttribute('fill', color)
+    });
+}
+
 function nextTimeLog(timeLog) {
     let timeLogTableDiv = document.getElementById("time-log-table-div");
-    timeLogTableDiv.innerHTML = "";
+
+    let arrowHTML = `
+    <svg width="201" height="16" viewBox="0 0 201 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "remain-ready" class = "arrow"> <path d="M200.707 8.70711C201.098 8.31658 201.098 7.68342 200.707 7.29289L194.343 0.928932C193.953 0.538408 193.319 0.538408 192.929 0.928932C192.538 1.31946 192.538 1.95262 192.929 2.34315L198.586 8L192.929 13.6569C192.538 14.0474 192.538 14.6805 192.929 15.0711C193.319 15.4616 193.953 15.4616 194.343 15.0711L200.707 8.70711ZM0 9H200V7H0V9Z" fill="black"/> </svg>
+    <svg width="212" height="27" viewBox="0 0 212 27" fill="none" xmlns="http://www.w3.org/2000/svg" id="ready-running" class="arrow"> <path d="M106 1.5L106.174 0.515169L106 0.484597L105.826 0.515169L106 1.5ZM211.574 20.8191C212.026 20.5022 212.136 19.8787 211.819 19.4263L206.656 12.0546C206.339 11.6023 205.715 11.4924 205.263 11.8092C204.811 12.1261 204.701 12.7496 205.018 13.202L209.607 19.7546L203.055 24.3441C202.602 24.6609 202.492 25.2845 202.809 25.7368C203.126 26.1892 203.75 26.2991 204.202 25.9822L211.574 20.8191ZM1.17352 20.9848L106.174 2.48483L105.826 0.515169L0.826482 19.0152L1.17352 20.9848ZM105.826 2.48483L210.826 20.9848L211.174 19.0152L106.174 0.515169L105.826 2.48483Z" fill="black"/> </svg>
+    <svg width="212" height="27" viewBox="0 0 212 27" fill="none" xmlns="http://www.w3.org/2000/svg" id="running-ready" class="arrow"> <path d="M106 1.5L106.174 0.515169L106 0.484597L105.826 0.515169L106 1.5ZM211.574 20.8191C212.026 20.5022 212.136 19.8787 211.819 19.4263L206.656 12.0546C206.339 11.6023 205.715 11.4924 205.263 11.8092C204.811 12.1261 204.701 12.7496 205.018 13.202L209.607 19.7546L203.055 24.3441C202.602 24.6609 202.492 25.2845 202.809 25.7368C203.126 26.1892 203.75 26.2991 204.202 25.9822L211.574 20.8191ZM1.17352 20.9848L106.174 2.48483L105.826 0.515169L0.826482 19.0152L1.17352 20.9848ZM105.826 2.48483L210.826 20.9848L211.174 19.0152L106.174 0.515169L105.826 2.48483Z" fill="black"/> </svg>
+    <svg width="201" height="16" viewBox="0 0 201 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "running-terminate" class = "arrow"> <path d="M200.707 8.70711C201.098 8.31658 201.098 7.68342 200.707 7.29289L194.343 0.928932C193.953 0.538408 193.319 0.538408 192.929 0.928932C192.538 1.31946 192.538 1.95262 192.929 2.34315L198.586 8L192.929 13.6569C192.538 14.0474 192.538 14.6805 192.929 15.0711C193.319 15.4616 193.953 15.4616 194.343 15.0711L200.707 8.70711ZM0 9H200V7H0V9Z" fill="black"/> </svg>
+    <svg width="126" height="16" viewBox="0 0 126 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "running-block" class = "arrow"> <path d="M125.707 8.70711C126.098 8.31658 126.098 7.68342 125.707 7.29289L119.343 0.928932C118.953 0.538408 118.319 0.538408 117.929 0.928932C117.538 1.31946 117.538 1.95262 117.929 2.34315L123.586 8L117.929 13.6569C117.538 14.0474 117.538 14.6805 117.929 15.0711C118.319 15.4616 118.953 15.4616 119.343 15.0711L125.707 8.70711ZM0 9H125V7H0V9Z" fill="black"/> </svg>
+    <svg width="126" height="16" viewBox="0 0 126 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "block-ready" class = "arrow"> <path d="M125.707 8.70711C126.098 8.31658 126.098 7.68342 125.707 7.29289L119.343 0.928932C118.953 0.538408 118.319 0.538408 117.929 0.928932C117.538 1.31946 117.538 1.95262 117.929 2.34315L123.586 8L117.929 13.6569C117.538 14.0474 117.538 14.6805 117.929 15.0711C118.319 15.4616 118.953 15.4616 119.343 15.0711L125.707 8.70711ZM0 9H125V7H0V9Z" fill="black"/> </svg>
+    `;
+    timeLogTableDiv.innerHTML = arrowHTML;
 
     let remainTable = document.createElement("table");
     remainTable.id = "remain-table";
@@ -684,33 +701,55 @@ function nextTimeLog(timeLog) {
         terminateTableValue.innerHTML = 'P' + (timeLog.terminate[i] + 1);
     }
     timeLogTableDiv.appendChild(terminateTable);
-
-    let timeLogTime = document.getElementById("time-log-time");
-    timeLogTime.innerHTML = "Time : " + timeLog.time;
+    document.getElementById("time-log-time").innerHTML = "Time : " + timeLog.time;
 }
 
 function showTimeLog(output, outputDiv) {
     let timeLogDiv = document.createElement("div");
     timeLogDiv.id = "time-log-div";
+    timeLogDiv.style.height = (15 * process) + 300 + "px";
     let startTimeLogButton = document.createElement("button");
     startTimeLogButton.id = "start-time-log";
     startTimeLogButton.innerHTML = "Start Time Log";
     timeLogDiv.appendChild(startTimeLogButton);
-    let timeLogTableDiv = document.createElement("div");
-    timeLogTableDiv.id = "time-log-table-div";
-    timeLogDiv.appendChild(timeLogTableDiv);
-    let timeLogTime = document.createElement("p");
-    timeLogTime.id = "time-log-time";
-    timeLogDiv.appendChild(timeLogTime);
     outputDiv.appendChild(timeLogDiv);
+
     document.querySelector("#start-time-log").onclick = () => {
+        timeLogStart = 1;
+        let timeLogDiv = document.getElementById("time-log-div");
+        let timeLogOutputDiv = document.createElement("div");
+        timeLogOutputDiv.id = "time-log-output-div";
+
+        let timeLogTableDiv = document.createElement("div");
+        timeLogTableDiv.id = "time-log-table-div";
+
+        let timeLogTime = document.createElement("p");
+        timeLogTime.id = "time-log-time";
+
+        timeLogOutputDiv.appendChild(timeLogTableDiv);
+        timeLogOutputDiv.appendChild(timeLogTime);
+        timeLogDiv.appendChild(timeLogOutputDiv);
         let index = 0;
         let timeLogInterval = setInterval(() => {
-            nextTimeLog(output.timeLog[index++]);
+            nextTimeLog(output.timeLog[index]);
+            if (index != output.timeLog.length - 1) {
+                setTimeout(() => {
+                    toggleTimeLogArrowColor(output.timeLog[index], 'red');
+                    setTimeout(() => {
+                        toggleTimeLogArrowColor(output.timeLog[index], 'black');
+                    }, 600);
+                }, 200);
+            }
+            index++;
             if (index == output.timeLog.length) {
                 clearInterval(timeLogInterval);
             }
-        }, 500);
+            document.getElementById("calculate").onclick = () => {
+                clearInterval(timeLogInterval);
+                document.getElementById("time-log-output-div").innerHTML = "";
+                calculateOutput();
+            }
+        }, 1000);
     };
 }
 
@@ -736,7 +775,13 @@ function moveElement(value, from, to) { //if present in from and not in to
 function CPUScheduler(input, utility, output) {
     function updateReadyQueue(currentTimeLog) {
         let candidatesRemain = currentTimeLog.remain.filter((element) => input.arrivalTime[element] <= currentTimeLog.time);
+        if (candidatesRemain.length > 0) {
+            currentTimeLog.move.push(0);
+        }
         let candidatesBlock = currentTimeLog.block.filter((element) => utility.returnTime[element] <= currentTimeLog.time);
+        if (candidatesBlock.length > 0) {
+            currentTimeLog.move.push(5);
+        }
         let candidates = candidatesRemain.concat(candidatesBlock);
         candidates.sort((a, b) => utility.returnTime[a] - utility.returnTime[b]);
         candidates.forEach(element => {
@@ -747,6 +792,7 @@ function CPUScheduler(input, utility, output) {
     let currentTimeLog = new TimeLog();
     currentTimeLog.remain = input.processId;
     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+    currentTimeLog.move = [];
     currentTimeLog.time++;
     let contextSwitch = Number(document.querySelector("#context-switch").value);
     let timeQuantum = Number(document.querySelector("#tq").value);
@@ -754,6 +800,7 @@ function CPUScheduler(input, utility, output) {
         updateReadyQueue(currentTimeLog);
         if (currentTimeLog.ready.length > 0) {
             output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+            currentTimeLog.move = [];
         }
         let found = -1;
         if (currentTimeLog.running.length == 1) {
@@ -790,7 +837,9 @@ function CPUScheduler(input, utility, output) {
                 found = candidates[0];
             }
             moveElement(found, currentTimeLog.ready, currentTimeLog.running);
+            currentTimeLog.move.push(1);
             output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+            currentTimeLog.move = [];
             if (utility.start[found] == false) {
                 utility.start[found] = true;
                 output.responseTime[found] = currentTimeLog.time - input.arrivalTime[found];
@@ -810,19 +859,23 @@ function CPUScheduler(input, utility, output) {
                             utility.done[found] = true;
                             output.completionTime[found] = currentTimeLog.time;
                             moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                            currentTimeLog.move.push(2);
                         } else {
                             utility.returnTime[found] = currentTimeLog.time + input.processTime[found][utility.currentProcessIndex[found]];
                             utility.currentProcessIndex[found]++;
                             moveElement(found, currentTimeLog.running, currentTimeLog.block);
+                            currentTimeLog.move.push(4);
                         }
                         updateReadyQueue(currentTimeLog);
                     } else {
                         updateReadyQueue(currentTimeLog);
                         moveElement(found, currentTimeLog.running, currentTimeLog.ready);
+                        currentTimeLog.move.push(3);
                     }
                     output.schedule.push([-2, contextSwitch]);
                     for (let i = 0; i < contextSwitch; i++, currentTimeLog.time++) {
                         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                        currentTimeLog.move = [];
                         updateReadyQueue(currentTimeLog);
                     }
                 }
@@ -833,13 +886,16 @@ function CPUScheduler(input, utility, output) {
                         utility.done[found] = true;
                         output.completionTime[found] = currentTimeLog.time;
                         moveElement(found, currentTimeLog.running, currentTimeLog.terminate);
+                        currentTimeLog.move.push(2);
                     } else {
                         utility.returnTime[found] = currentTimeLog.time + input.processTime[found][utility.currentProcessIndex[found]];
                         utility.currentProcessIndex[found]++;
                         moveElement(found, currentTimeLog.running, currentTimeLog.block);
+                        currentTimeLog.move.push(4);
                     }
                 } else if (input.algorithmType == "preemptive") {
                     moveElement(found, currentTimeLog.running, currentTimeLog.ready);
+                    currentTimeLog.move.push(3);
                 }
                 if (currentTimeLog.running.length == 0) //context switch
                 {
@@ -854,11 +910,12 @@ function CPUScheduler(input, utility, output) {
             output.schedule.push([-1, 1]);
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        currentTimeLog.move = [];
     }
     output.schedule.pop();
 }
 
-document.querySelector(".calculate").onclick = () => { //event listener for calculate
+function calculateOutput() {
     let outputDiv = document.getElementById("output");
     outputDiv.innerHTML = "";
     let mainInput = new Input();
@@ -874,5 +931,8 @@ document.querySelector(".calculate").onclick = () => { //event listener for calc
     });
     setOutput(mainInput, mainOutput);
     showOutput(mainInput, mainOutput, outputDiv);
-    // clearInterval(timeLogInterval);
+}
+
+document.getElementById("calculate").onclick = () => {
+    calculateOutput();
 }

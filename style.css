@@ -109,11 +109,65 @@ thead {
     font-weight: bold;
 }
 
-#time-log-div {
-    height: 40vh;
-}
-
 #time-log-table-div {
+    margin-top: 20px;
     display: flex;
     justify-content: space-around;
+    position: relative;
+}
+
+#remain-table {
+    width: 100px;
+    position: relative;
+}
+
+#ready-table {
+    width: 100px;
+    position: relative;
+}
+
+#running-table {
+    width: 100px;
+    position: relative;
+}
+
+#block-table {
+    width: 100px;
+    position: absolute;
+    right: 46%;
+    top: 115px;
+}
+
+#terminate-table {
+    width: 100px;
+    position: relative;
+}
+
+.arrow {
+    position: absolute;
+    font-size: 24px;
+}
+
+#remain-ready {
+    left: 210px;
+}
+
+#ready-running {
+    transform: translate(0, -20px);
+}
+
+#running-ready {
+    transform: rotate(180deg) translate(0, -5px);
+}
+
+#running-terminate {
+    right: 210px;
+}
+
+#running-block {
+    transform: translate(57px, 60px) rotate(135deg);
+}
+
+#block-ready {
+    transform: translate(-57px, 60px) rotate(225deg);
 }
