@@ -342,7 +342,7 @@ function showGanttChart(output, outputDiv) {
     output.schedule.forEach((element) => {
         if (element[0] == -2) { //context switch
             ganttChartData.push([
-                "Row",
+                "Time",
                 "CS",
                 "grey",
                 startGantt * 1000,
@@ -351,8 +351,8 @@ function showGanttChart(output, outputDiv) {
 
         } else if (element[0] == -1) { //nothing
             ganttChartData.push([
-                "Row",
-                "",
+                "Time",
+                "Empty",
                 "black",
                 startGantt * 1000,
                 (startGantt + element[1]) * 1000
@@ -360,7 +360,7 @@ function showGanttChart(output, outputDiv) {
 
         } else { //process 
             ganttChartData.push([
-                "Row",
+                "Time",
                 "P" + element[0],
                 "",
                 startGantt * 1000,
@@ -369,7 +369,6 @@ function showGanttChart(output, outputDiv) {
         }
         startGantt += element[1];
     });
-    ganttChartData.sort((a, b) => parseInt(a[1].substring(1, a[1].length)) - parseInt(b[1].substring(1, b[1].length)));
     let ganttChart = document.createElement("div");
     ganttChart.id = "gantt-chart";
 
@@ -788,6 +787,8 @@ function CPUScheduler(input, utility, output) {
             moveElement(element, currentTimeLog.remain, currentTimeLog.ready);
             moveElement(element, currentTimeLog.block, currentTimeLog.ready);
         });
+        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+        currentTimeLog.move = [];
     }
     let currentTimeLog = new TimeLog();
     currentTimeLog.remain = input.processId;
@@ -798,10 +799,6 @@ function CPUScheduler(input, utility, output) {
     let timeQuantum = Number(document.querySelector("#tq").value);
     while (utility.done.some((element) => element == false)) {
         updateReadyQueue(currentTimeLog);
-        if (currentTimeLog.ready.length > 0) {
-            output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
-            currentTimeLog.move = [];
-        }
         let found = -1;
         if (currentTimeLog.running.length == 1) {
             found = currentTimeLog.running[0];
@@ -866,16 +863,18 @@ function CPUScheduler(input, utility, output) {
                             moveElement(found, currentTimeLog.running, currentTimeLog.block);
                             currentTimeLog.move.push(4);
                         }
+                        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                        currentTimeLog.move = [];
                         updateReadyQueue(currentTimeLog);
                     } else {
                         updateReadyQueue(currentTimeLog);
                         moveElement(found, currentTimeLog.running, currentTimeLog.ready);
                         currentTimeLog.move.push(3);
+                        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                        currentTimeLog.move = [];
                     }
                     output.schedule.push([-2, contextSwitch]);
                     for (let i = 0; i < contextSwitch; i++, currentTimeLog.time++) {
-                        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
-                        currentTimeLog.move = [];
                         updateReadyQueue(currentTimeLog);
                     }
                 }
@@ -897,11 +896,12 @@ function CPUScheduler(input, utility, output) {
                     moveElement(found, currentTimeLog.running, currentTimeLog.ready);
                     currentTimeLog.move.push(3);
                 }
+                output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                currentTimeLog.move = [];
                 if (currentTimeLog.running.length == 0) //context switch
                 {
                     output.schedule.push([-2, contextSwitch]);
                     for (let i = 0; i < contextSwitch; i++, currentTimeLog.time++) {
-                        output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
                         updateReadyQueue(currentTimeLog);
                     }
                 }
@@ -910,7 +910,6 @@ function CPUScheduler(input, utility, output) {
             output.schedule.push([-1, 1]);
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
-        currentTimeLog.move = [];
     }
     output.schedule.pop();
 }
