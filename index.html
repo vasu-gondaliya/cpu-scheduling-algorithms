@@ -27,17 +27,19 @@
                 <i class="fa fa-refresh"></i>
             </button>
         </li>
-        <h3>Algorithms : </h3>
-        <form id="algorithms">
-            <input type="radio" name="algo" id="fcfs" checked> <label for="fcfs">First Come First Serve</label> <br>
-            <input type="radio" name="algo" id="sjf"> <label for="sjf">Shortest Job First</label> <br>
-            <input type="radio" name="algo" id="srjf"> <label for="srjf">Shortest Remaining Job First</label> <br>
-            <input type="radio" name="algo" id="rr"> <label for="rr">Round Robin</label> <br>
-            <input type="radio" name="algo" id="ljf"> <label for="ljf">Longest Job First</label> <br>
-            <input type="radio" name="algo" id="lrjf"> <label for="lrjf">Longest Remaining Job First</label> <br>
-            <input type="radio" name="algo" id="hrrn"> <label for="hrrn">Highest Response Ratio Next</label> <br>
-            <input type="radio" name="algo" id="pnp"> <label for="pnp">Priority Non Preemptive</label> <br>
-            <input type="radio" name="algo" id="pp"> <label for="pp">Priority Preemptive</label> <br>
+        <form id="algorithms-form">
+            <label for="algo"><h3>Algorithms : </h3></label>
+            <select name="algo" id="algo">
+                <option value="fcfs">First Come First Serve (FCFS)</option>
+                <option value="sjf">Shortest Job First (SJF)</option>
+                <option value="ljf">Longest Job First (LJF)</option>
+                <option value="srtf">Shortest Remaining Job First (SRTF)</option>
+                <option value="lrtf">Longest Remaining Job First (LRTF)</option>
+                <option value="rr">Round Robin</option>
+                <option value="pnp">Priority (Non Preemptive)</option>
+                <option value="pp">Priority (Preemptive)</option>
+                <option value="hrrn">Highest Response Ratio Next (HRRN)</option>
+            </select>
         </form>
         <br>
         <table class="main-table">
@@ -63,6 +65,9 @@
                 </tr>
             </tbody>
         </table>
+        <br>
+        <button type="button" class="add-btn">Add Row</button>
+        <button type="button" class="remove-btn">Delete Row</button>
         <div id="context-switch-div">
             <br>
             <label for="context-switch">Context Switch Time : </label>
@@ -74,9 +79,8 @@
             <input type="number" name="Time Quantum" id="tq" min="1" step="1" value="1">
         </div>
         <br>
-        <button type="button" class="add-btn">+</button>
-        <button type="button" class="remove-btn">-</button>
         <button type="button" id="calculate">Calculate</button>
+        <button type="button" id="reset" onClick="window.location.reload();">Reset</button>
         <div id="output"></div>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>

@@ -8,44 +8,38 @@ document.getElementById("priority-toggle-btn").onclick = () => {
     }
     priorityPreference *= -1;
 };
-let radios = document.querySelectorAll("#algorithms input"); //when radio changed, show/hide time quantum input and show/hide priority column
+
+let selectedAlgorithm = document.getElementById('algo');
+
 function checkTimeQuantumInput() {
-    radios.forEach((radio) => {
-        if (radio.checked == true) {
-            let timequantum = document.querySelector("#time-quantum").classList;
-            if (radio.id == "rr") {
-                timequantum.remove("hide");
-            } else {
-                timequantum.add("hide");
-            }
-        }
-    });
+    let timequantum = document.querySelector("#time-quantum").classList;
+    if (selectedAlgorithm.value == 'rr') {
+        timequantum.remove("hide");
+    } else {
+        timequantum.add("hide");
+    }
 }
 
 function checkPriorityCell() {
-    radios.forEach((radio) => {
-        if (radio.checked == true) {
-            let prioritycell = document.querySelectorAll(".priority");
-            if (radio.id == "pnp" || radio.id == "pp") {
-                prioritycell.forEach((element) => {
-                    element.classList.remove("hide");
-                });
-            } else {
-                prioritycell.forEach((element) => {
-                    element.classList.add("hide");
-                });
-            }
-        }
-    });
+    let prioritycell = document.querySelectorAll(".priority");
+    if (selectedAlgorithm.value == "pnp" || selectedAlgorithm.value == "pp") {
+        prioritycell.forEach((element) => {
+            element.classList.remove("hide");
+        });
+    } else {
+        prioritycell.forEach((element) => {
+            element.classList.add("hide");
+        });
+    }
 }
-radios.forEach((radio) =>
-    radio.addEventListener("change", () => {
-        checkTimeQuantumInput();
-        checkPriorityCell();
-    })
-);
 
-function inputOnChange() {
+selectedAlgorithm.onchange = () => {
+    checkTimeQuantumInput();
+    checkPriorityCell();
+};
+
+
+function inputOnChange() { //onchange EventListener for input
     let inputs = document.querySelectorAll('input');
     inputs.forEach((input) => {
         if (input.type == 'number') {
@@ -71,7 +65,7 @@ function inputOnChange() {
         }
     });
 }
-inputOnChange(); //onchange EventListener for input
+inputOnChange();
 let process = 1;
 //resize burst time rows size on +/-
 
@@ -218,6 +212,8 @@ class Input {
         this.totalBurstTime = [];
         this.algorithm = "";
         this.algorithmType = "";
+        this.timeQuantum = 0;
+        this.contextSwitch = 0;
     }
 }
 class Utility {
@@ -240,6 +236,8 @@ class Output {
         this.responseTime = [];
         this.schedule = [];
         this.timeLog = [];
+        this.contextSwitches = 0;
+        this.averageTimes = []; //ct,tat,wt,rt
     }
 }
 class TimeLog {
@@ -251,6 +249,27 @@ class TimeLog {
         this.block = [];
         this.terminate = [];
         this.move = []; //0-remain->ready 1-ready->running 2-running->terminate 3-running->ready 4-running->block 5-block->ready
+    }
+}
+
+function setAlgorithmNameType(input, algorithm) {
+    input.algorithm = algorithm;
+    switch (algorithm) {
+        case 'fcfs':
+        case 'sjf':
+        case 'ljf':
+        case 'pnp':
+        case 'hrrn':
+            input.algorithmType = "nonpreemptive";
+            break;
+        case 'srtf':
+        case 'lrtf':
+        case 'pp':
+            input.algorithmType = "preemptive";
+            break;
+        case 'rr':
+            input.algorithmType = "roundrobin";
+            break;
     }
 }
 
@@ -278,6 +297,9 @@ function setInput(input) {
             }
         });
     });
+    setAlgorithmNameType(input, selectedAlgorithm.value);
+    input.contextSwitch = Number(document.querySelector("#context-switch").value);
+    input.timeQuantum = Number(document.querySelector("#tq").value);
 }
 
 function setUtility(input, utility) {
@@ -323,6 +345,30 @@ function reduceTimeLog(timeLog) {
     return newTimeLog;
 }
 
+function outputAverageTimes(output) {
+    let avgct = 0;
+    output.completionTime.forEach((element) => {
+        avgct += element;
+    });
+    avgct /= process;
+    let avgtat = 0;
+    output.turnAroundTime.forEach((element) => {
+        avgtat += element;
+    });
+    avgtat /= process;
+    let avgwt = 0;
+    output.waitingTime.forEach((element) => {
+        avgwt += element;
+    });
+    avgwt /= process;
+    let avgrt = 0;
+    output.responseTime.forEach((element) => {
+        avgrt += element;
+    });
+    avgrt /= process;
+    return [avgct, avgtat, avgwt, avgrt];
+}
+
 function setOutput(input, output) {
     //set turn around time and waiting time
     for (let i = 0; i < process; i++) {
@@ -331,6 +377,7 @@ function setOutput(input, output) {
     }
     output.schedule = reduceSchedule(output.schedule);
     output.timeLog = reduceTimeLog(output.timeLog);
+    output.averageTimes = outputAverageTimes(output);
 }
 
 function showGanttChart(output, outputDiv) {
@@ -492,125 +539,6 @@ function showFinalTable(input, output, outputDiv) {
     outputDiv.appendChild(tp);
 }
 
-function setAlgorithmNameType(input, algorithm) {
-    input.algorithm = algorithm;
-    switch (algorithm) {
-        case 'fcfs':
-        case 'sjf':
-        case 'ljf':
-        case 'pnp':
-        case 'hrrn':
-            input.algorithmType = "nonpreemptive";
-            break;
-        case 'srjf':
-        case 'lrjf':
-        case 'pp':
-            input.algorithmType = "preemptive";
-            break;
-        case 'rr':
-            input.algorithmType = "roundrobin";
-            break;
-    }
-}
-
-function showAlgorithmChart(outputDiv) {
-    let algorithmArray = ["fcfs", "sjf", "srjf", "rr", "ljf", "lrjf", "pnp", "pp", "hrrn"];
-    let algorithmChartData = [
-        [],
-        [],
-        [],
-        []
-    ];
-    algorithmArray.forEach(currentAlgorithm => {
-        let chartInput = new Input();
-        let chartUtility = new Utility();
-        let chartOutput = new Output();
-        setInput(chartInput);
-        setUtility(chartInput, chartUtility);
-        setAlgorithmNameType(chartInput, currentAlgorithm);
-        CPUScheduler(chartInput, chartUtility, chartOutput);
-        setOutput(chartInput, chartOutput);
-        let avgct = 0;
-        chartOutput.completionTime.forEach((element) => {
-            avgct += element;
-        });
-        avgct /= process;
-        let avgtat = 0;
-        chartOutput.turnAroundTime.forEach((element) => {
-            avgtat += element;
-        });
-        avgtat /= process;
-        let avgwt = 0;
-        chartOutput.waitingTime.forEach((element) => {
-            avgwt += element;
-        });
-        avgwt /= process;
-        let avgrt = 0;
-        chartOutput.responseTime.forEach((element) => {
-            avgrt += element;
-        });
-        avgrt /= process;
-        algorithmChartData[0].push(avgct);
-        algorithmChartData[1].push(avgtat);
-        algorithmChartData[2].push(avgwt);
-        algorithmChartData[3].push(avgrt);
-    });
-    let algorithmChartCanvas = document.createElement('canvas');
-    algorithmChartCanvas.id = "algorithm-chart";
-    let algorithmChartDiv = document.createElement('div');
-    algorithmChartDiv.id = "algorithm-chart-div";
-    algorithmChartDiv.style.height = "40vh";
-    algorithmChartDiv.style.width = "80%";
-    algorithmChartDiv.appendChild(algorithmChartCanvas);
-    outputDiv.appendChild(algorithmChartDiv);
-    new Chart(document.getElementById('algorithm-chart'), {
-        type: 'bar',
-        data: {
-            labels: algorithmArray,
-            datasets: [{
-                    label: "Completion Time",
-                    backgroundColor: '#3366CC',
-                    data: algorithmChartData[0]
-                },
-                {
-                    label: "Turn Around Time",
-                    backgroundColor: '#DC3912',
-                    data: algorithmChartData[1]
-                },
-                {
-                    label: "Waiting Time",
-                    backgroundColor: '#FF9900',
-                    data: algorithmChartData[2]
-                },
-                {
-                    label: "Response Time",
-                    backgroundColor: '#109618',
-                    data: algorithmChartData[3]
-                }
-            ]
-        },
-        options: {
-            title: {
-                display: true,
-                text: ['Algorithm', 'Comparison of Completion, Turn Around, Waiting and Response Time']
-            },
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            legend: {
-                display: true,
-                labels: {
-                    fontColor: 'black'
-                }
-            }
-        }
-    });
-}
-
 function toggleTimeLogArrowColor(timeLog, color) {
     let timeLogMove = ['remain-ready', 'ready-running', 'running-terminate', 'running-ready', 'running-block', 'block-ready'];
     timeLog.move.forEach(element => {
@@ -704,6 +632,7 @@ function nextTimeLog(timeLog) {
 }
 
 function showTimeLog(output, outputDiv) {
+    reduceTimeLog(output.timeLog);
     let timeLogDiv = document.createElement("div");
     timeLogDiv.id = "time-log-div";
     timeLogDiv.style.height = (15 * process) + 300 + "px";
@@ -752,23 +681,190 @@ function showTimeLog(output, outputDiv) {
     };
 }
 
+function showRoundRobinChart(outputDiv) {
+    if (selectedAlgorithm.value == 'rr') {
+        let roundRobinInput = new Input();
+        setInput(roundRobinInput);
+        let maxTimeQuantum = 0;
+        roundRobinInput.processTime.forEach(processTimeArray => {
+            processTimeArray.forEach((time, index) => {
+                if (index % 2 == 0) {
+                    maxTimeQuantum = Math.max(maxTimeQuantum, time);
+                }
+            });
+        });
+        let roundRobinChartData = [
+            [],
+            [],
+            [],
+            [],
+            []
+        ];
+        let timeQuantumArray = [];
+        for (let timeQuantum = 1; timeQuantum <= maxTimeQuantum; timeQuantum++) {
+            timeQuantumArray.push(timeQuantum);
+            let roundRobinInput = new Input();
+            setInput(roundRobinInput);
+            setAlgorithmNameType(roundRobinInput, 'rr');
+            roundRobinInput.timeQuantum = timeQuantum;
+            let roundRobinUtility = new Utility();
+            setUtility(roundRobinInput, roundRobinUtility);
+            let roundRobinOutput = new Output();
+            CPUScheduler(roundRobinInput, roundRobinUtility, roundRobinOutput);
+            setOutput(roundRobinInput, roundRobinOutput);
+            for (let i = 0; i < 4; i++) {
+                roundRobinChartData[i].push(roundRobinOutput.averageTimes[i]);
+            }
+            roundRobinChartData[4].push(roundRobinOutput.contextSwitches);
+        }
+        let roundRobinChartCanvas = document.createElement('canvas');
+        roundRobinChartCanvas.id = "round-robin-chart";
+        let roundRobinChartDiv = document.createElement('div');
+        roundRobinChartDiv.id = "round-robin-chart-div";
+        roundRobinChartDiv.style.height = "40vh";
+        roundRobinChartDiv.style.width = "80%";
+        roundRobinChartDiv.style.marginBottom = "400px";
+        roundRobinChartDiv.appendChild(roundRobinChartCanvas);
+        outputDiv.appendChild(roundRobinChartDiv);
+
+        new Chart(document.getElementById('round-robin-chart'), {
+            type: 'line',
+            data: {
+                labels: timeQuantumArray,
+                datasets: [{
+                        label: "Completion Time",
+                        borderColor: '#3366CC',
+                        data: roundRobinChartData[0]
+                    },
+                    {
+                        label: "Turn Around Time",
+                        borderColor: '#DC3912',
+                        data: roundRobinChartData[1]
+                    },
+                    {
+                        label: "Waiting Time",
+                        borderColor: '#FF9900',
+                        data: roundRobinChartData[2]
+                    },
+                    {
+                        label: "Response Time",
+                        borderColor: '#109618',
+                        data: roundRobinChartData[3]
+                    },
+                    {
+                        label: "Context Switches",
+                        borderColor: '#990099',
+                        data: roundRobinChartData[4]
+                    },
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: ['Round Robin', 'Comparison of Completion, Turn Around, Waiting, Response Time and Context Switches', 'The Lower The Better']
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                legend: {
+                    display: true,
+                    labels: {
+                        fontColor: 'black'
+                    }
+                }
+            }
+        });
+    }
+}
+
+function showAlgorithmChart(outputDiv) {
+    let algorithmArray = ["fcfs", "sjf", "srtf", "ljf", "lrtf", "rr", "hrrn", "pnp", "pp"];
+    let algorithmChartData = [
+        [],
+        [],
+        [],
+        []
+    ];
+    algorithmArray.forEach(currentAlgorithm => {
+        let chartInput = new Input();
+        let chartUtility = new Utility();
+        let chartOutput = new Output();
+        setInput(chartInput);
+        setAlgorithmNameType(chartInput, currentAlgorithm);
+        setUtility(chartInput, chartUtility);
+        CPUScheduler(chartInput, chartUtility, chartOutput);
+        setOutput(chartInput, chartOutput);
+        for (let i = 0; i < 4; i++) {
+            algorithmChartData[i].push(chartOutput.averageTimes[i]);
+        }
+    });
+    let algorithmChartCanvas = document.createElement('canvas');
+    algorithmChartCanvas.id = "algorithm-chart";
+    let algorithmChartDiv = document.createElement('div');
+    algorithmChartDiv.id = "algorithm-chart-div";
+    algorithmChartDiv.style.height = "40vh";
+    algorithmChartDiv.style.width = "80%";
+    algorithmChartDiv.appendChild(algorithmChartCanvas);
+    outputDiv.appendChild(algorithmChartDiv);
+    new Chart(document.getElementById('algorithm-chart'), {
+        type: 'bar',
+        data: {
+            labels: algorithmArray,
+            datasets: [{
+                    label: "Completion Time",
+                    backgroundColor: '#3366CC',
+                    data: algorithmChartData[0]
+                },
+                {
+                    label: "Turn Around Time",
+                    backgroundColor: '#DC3912',
+                    data: algorithmChartData[1]
+                },
+                {
+                    label: "Waiting Time",
+                    backgroundColor: '#FF9900',
+                    data: algorithmChartData[2]
+                },
+                {
+                    label: "Response Time",
+                    backgroundColor: '#109618',
+                    data: algorithmChartData[3]
+                }
+            ]
+        },
+        options: {
+            title: {
+                display: true,
+                text: ['Algorithm', 'Comparison of Completion, Turn Around, Waiting and Response Time', 'The Lower The Better']
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                labels: {
+                    fontColor: 'black'
+                }
+            }
+        }
+    });
+}
+
 function showOutput(input, output, outputDiv) {
     showGanttChart(output, outputDiv);
     showTimelineChart(output, outputDiv);
     showFinalTable(input, output, outputDiv);
-    reduceTimeLog(output.timeLog);
     showTimeLog(output, outputDiv);
+    showRoundRobinChart(outputDiv);
     showAlgorithmChart(outputDiv);
-}
-
-function moveElement(value, from, to) { //if present in from and not in to
-    let index = from.indexOf(value);
-    if (index != -1) {
-        from.splice(index, 1);
-    }
-    if (to.indexOf(value) == -1) {
-        to.push(value);
-    }
 }
 
 function CPUScheduler(input, utility, output) {
@@ -790,13 +886,22 @@ function CPUScheduler(input, utility, output) {
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
         currentTimeLog.move = [];
     }
+
+    function moveElement(value, from, to) { //if present in from and not in to
+        let index = from.indexOf(value);
+        if (index != -1) {
+            from.splice(index, 1);
+        }
+        if (to.indexOf(value) == -1) {
+            to.push(value);
+        }
+    }
     let currentTimeLog = new TimeLog();
     currentTimeLog.remain = input.processId;
     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     currentTimeLog.move = [];
     currentTimeLog.time++;
-    let contextSwitch = Number(document.querySelector("#context-switch").value);
-    let timeQuantum = Number(document.querySelector("#tq").value);
+
     while (utility.done.some((element) => element == false)) {
         updateReadyQueue(currentTimeLog);
         let found = -1;
@@ -805,7 +910,7 @@ function CPUScheduler(input, utility, output) {
         } else if (currentTimeLog.ready.length > 0) {
             if (input.algorithm == 'rr') {
                 found = currentTimeLog.ready[0];
-                utility.remainingTimeRunning[found] = Math.min(utility.remainingProcessTime[found][utility.currentProcessIndex[found]], timeQuantum);
+                utility.remainingTimeRunning[found] = Math.min(utility.remainingProcessTime[found][utility.currentProcessIndex[found]], input.timeQuantum);
             } else {
                 let candidates = currentTimeLog.ready;
                 candidates.sort((a, b) => a - b);
@@ -814,10 +919,10 @@ function CPUScheduler(input, utility, output) {
                         case 'fcfs':
                             return utility.returnTime[a] - utility.returnTime[b];
                         case 'sjf':
-                        case 'srjf':
+                        case 'srtf':
                             return utility.remainingBurstTime[a] - utility.remainingBurstTime[b];
                         case 'ljf':
-                        case 'lrjf':
+                        case 'lrtf':
                             return utility.remainingBurstTime[b] - utility.remainingBurstTime[a];
                         case 'pnp':
                         case 'pp':
@@ -873,9 +978,12 @@ function CPUScheduler(input, utility, output) {
                         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
                         currentTimeLog.move = [];
                     }
-                    output.schedule.push([-2, contextSwitch]);
-                    for (let i = 0; i < contextSwitch; i++, currentTimeLog.time++) {
+                    output.schedule.push([-2, input.contextSwitch]);
+                    for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
                         updateReadyQueue(currentTimeLog);
+                    }
+                    if (input.contextSwitch > 0) {
+                        output.contextSwitches++;
                     }
                 }
             } else {
@@ -900,9 +1008,12 @@ function CPUScheduler(input, utility, output) {
                 currentTimeLog.move = [];
                 if (currentTimeLog.running.length == 0) //context switch
                 {
-                    output.schedule.push([-2, contextSwitch]);
-                    for (let i = 0; i < contextSwitch; i++, currentTimeLog.time++) {
+                    output.schedule.push([-2, input.contextSwitch]);
+                    for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
                         updateReadyQueue(currentTimeLog);
+                    }
+                    if (input.contextSwitch > 0) {
+                        output.contextSwitches++;
                     }
                 }
             }
@@ -922,16 +1033,11 @@ function calculateOutput() {
     let mainOutput = new Output();
     setInput(mainInput);
     setUtility(mainInput, mainUtility);
-    document.querySelectorAll("#algorithms input").forEach((element) => {
-        if (element.checked == true) {
-            setAlgorithmNameType(mainInput, element.id);
-            CPUScheduler(mainInput, mainUtility, mainOutput);
-        }
-    });
+    CPUScheduler(mainInput, mainUtility, mainOutput);
     setOutput(mainInput, mainOutput);
     showOutput(mainInput, mainOutput, outputDiv);
 }
 
 document.getElementById("calculate").onclick = () => {
     calculateOutput();
-}
+};
