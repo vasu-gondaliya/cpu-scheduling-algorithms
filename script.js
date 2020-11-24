@@ -38,7 +38,6 @@ selectedAlgorithm.onchange = () => {
     checkPriorityCell();
 };
 
-
 function inputOnChange() { //onchange EventListener for input
     let inputs = document.querySelectorAll('input');
     inputs.forEach((input) => {
@@ -380,6 +379,10 @@ function setOutput(input, output) {
     output.averageTimes = outputAverageTimes(output);
 }
 
+function getDate(sec) {
+    return (new Date(0, 0, 0, 0, sec / 60, sec % 60));
+}
+
 function showGanttChart(output, outputDiv) {
     let ganttChartHeading = document.createElement("h3");
     ganttChartHeading.innerHTML = "Gantt Chart";
@@ -392,8 +395,8 @@ function showGanttChart(output, outputDiv) {
                 "Time",
                 "CS",
                 "grey",
-                startGantt * 1000,
-                (startGantt + element[1]) * 1000
+                getDate(startGantt),
+                getDate(startGantt + element[1])
             ]);
 
         } else if (element[0] == -1) { //nothing
@@ -401,8 +404,8 @@ function showGanttChart(output, outputDiv) {
                 "Time",
                 "Empty",
                 "black",
-                startGantt * 1000,
-                (startGantt + element[1]) * 1000
+                getDate(startGantt),
+                getDate(startGantt + element[1])
             ]);
 
         } else { //process 
@@ -410,8 +413,8 @@ function showGanttChart(output, outputDiv) {
                 "Time",
                 "P" + element[0],
                 "",
-                startGantt * 1000,
-                (startGantt + element[1]) * 1000
+                getDate(startGantt),
+                getDate(startGantt + element[1])
             ]);
         }
         startGantt += element[1];
@@ -430,8 +433,8 @@ function showGanttChart(output, outputDiv) {
         dataTable.addColumn({ type: "string", id: "Gantt Chart" });
         dataTable.addColumn({ type: "string", id: "Process" });
         dataTable.addColumn({ type: 'string', id: 'style', role: 'style' });
-        dataTable.addColumn({ type: "number", id: "Start" });
-        dataTable.addColumn({ type: "number", id: "End" });
+        dataTable.addColumn({ type: "date", id: "Start" });
+        dataTable.addColumn({ type: "date", id: "End" });
         dataTable.addRows(ganttChartData);
 
         var options = {
@@ -456,8 +459,8 @@ function showTimelineChart(output, outputDiv) {
         if (element[0] >= 0) { //process 
             timelineChartData.push([
                 "P" + element[0],
-                startTimeline * 1000,
-                (startTimeline + element[1]) * 1000
+                getDate(startTimeline),
+                getDate(startTimeline + element[1])
             ]);
         }
         startTimeline += element[1];
@@ -475,8 +478,8 @@ function showTimelineChart(output, outputDiv) {
         var dataTable = new google.visualization.DataTable();
 
         dataTable.addColumn({ type: "string", id: "Process" });
-        dataTable.addColumn({ type: "number", id: "Start" });
-        dataTable.addColumn({ type: "number", id: "End" });
+        dataTable.addColumn({ type: "date", id: "Start" });
+        dataTable.addColumn({ type: "date", id: "End" });
         dataTable.addRows(timelineChartData);
         var options = {
             width: Math.max(1200, startTimeline * 40),
@@ -783,6 +786,7 @@ function showRoundRobinChart(outputDiv) {
 
 function showAlgorithmChart(outputDiv) {
     let algorithmArray = ["fcfs", "sjf", "srtf", "ljf", "lrtf", "rr", "hrrn", "pnp", "pp"];
+    let algorithmNameArray = ["FCFS", "SJF", "SRTF", "LJF", "LRTF", "RR", "HRRN", "PNP", "PP"];
     let algorithmChartData = [
         [],
         [],
@@ -813,7 +817,7 @@ function showAlgorithmChart(outputDiv) {
     new Chart(document.getElementById('algorithm-chart'), {
         type: 'bar',
         data: {
-            labels: algorithmArray,
+            labels: algorithmNameArray,
             datasets: [{
                     label: "Completion Time",
                     backgroundColor: '#3366CC',
