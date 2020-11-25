@@ -169,7 +169,8 @@ function addremove() { //add remove bt-io time pair add event listener
     }
 }
 addremove();
-document.querySelector(".add-btn").onclick = () => { //add row event listener
+
+function addProcess() {
     process++;
     let rowHTML1 = `
                           <td class="process-id" rowspan="2">P${process}</td>
@@ -189,8 +190,9 @@ document.querySelector(".add-btn").onclick = () => { //add row event listener
     addremove();
     updateColspan();
     inputOnChange();
-};
-document.querySelector(".remove-btn").onclick = () => { //remove row event listener
+}
+
+function deleteProcess() {
     let table = document.querySelector(".main-table");
     if (process > 1) {
         table.deleteRow(table.rows.length - 1);
@@ -199,6 +201,13 @@ document.querySelector(".remove-btn").onclick = () => { //remove row event liste
     }
     updateColspan();
     inputOnChange();
+}
+
+document.querySelector(".add-btn").onclick = () => { //add row event listener
+    addProcess();
+};
+document.querySelector(".remove-btn").onclick = () => { //remove row event listener
+    deleteProcess();
 };
 //------------------------
 class Input {
@@ -436,9 +445,12 @@ function showGanttChart(output, outputDiv) {
         dataTable.addColumn({ type: "date", id: "Start" });
         dataTable.addColumn({ type: "date", id: "End" });
         dataTable.addRows(ganttChartData);
-
+        let ganttWidth = '100%';
+        if (startGantt >= 20) {
+            ganttWidth = 0.05 * startGantt * screen.availWidth;
+        }
         var options = {
-            width: Math.max(1200, startGantt * 40),
+            width: ganttWidth,
             timeline: {
                 showRowLabels: false,
                 avoidOverlappingGridLines: false
@@ -481,8 +493,13 @@ function showTimelineChart(output, outputDiv) {
         dataTable.addColumn({ type: "date", id: "Start" });
         dataTable.addColumn({ type: "date", id: "End" });
         dataTable.addRows(timelineChartData);
+
+        let timelineWidth = '100%';
+        if (startTimeline >= 20) {
+            timelineWidth = 0.05 * startTimeline * screen.availWidth;
+        }
         var options = {
-            width: Math.max(1200, startTimeline * 40),
+            width: timelineWidth,
         };
         chart.draw(dataTable, options);
     }
@@ -545,7 +562,7 @@ function showFinalTable(input, output, outputDiv) {
 function toggleTimeLogArrowColor(timeLog, color) {
     let timeLogMove = ['remain-ready', 'ready-running', 'running-terminate', 'running-ready', 'running-block', 'block-ready'];
     timeLog.move.forEach(element => {
-        document.getElementById(timeLogMove[element]).firstElementChild.setAttribute('fill', color)
+        document.getElementById(timeLogMove[element]).style.color = color;
     });
 }
 
@@ -553,17 +570,18 @@ function nextTimeLog(timeLog) {
     let timeLogTableDiv = document.getElementById("time-log-table-div");
 
     let arrowHTML = `
-    <svg width="201" height="16" viewBox="0 0 201 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "remain-ready" class = "arrow"> <path d="M200.707 8.70711C201.098 8.31658 201.098 7.68342 200.707 7.29289L194.343 0.928932C193.953 0.538408 193.319 0.538408 192.929 0.928932C192.538 1.31946 192.538 1.95262 192.929 2.34315L198.586 8L192.929 13.6569C192.538 14.0474 192.538 14.6805 192.929 15.0711C193.319 15.4616 193.953 15.4616 194.343 15.0711L200.707 8.70711ZM0 9H200V7H0V9Z" fill="black"/> </svg>
-    <svg width="212" height="27" viewBox="0 0 212 27" fill="none" xmlns="http://www.w3.org/2000/svg" id="ready-running" class="arrow"> <path d="M106 1.5L106.174 0.515169L106 0.484597L105.826 0.515169L106 1.5ZM211.574 20.8191C212.026 20.5022 212.136 19.8787 211.819 19.4263L206.656 12.0546C206.339 11.6023 205.715 11.4924 205.263 11.8092C204.811 12.1261 204.701 12.7496 205.018 13.202L209.607 19.7546L203.055 24.3441C202.602 24.6609 202.492 25.2845 202.809 25.7368C203.126 26.1892 203.75 26.2991 204.202 25.9822L211.574 20.8191ZM1.17352 20.9848L106.174 2.48483L105.826 0.515169L0.826482 19.0152L1.17352 20.9848ZM105.826 2.48483L210.826 20.9848L211.174 19.0152L106.174 0.515169L105.826 2.48483Z" fill="black"/> </svg>
-    <svg width="212" height="27" viewBox="0 0 212 27" fill="none" xmlns="http://www.w3.org/2000/svg" id="running-ready" class="arrow"> <path d="M106 1.5L106.174 0.515169L106 0.484597L105.826 0.515169L106 1.5ZM211.574 20.8191C212.026 20.5022 212.136 19.8787 211.819 19.4263L206.656 12.0546C206.339 11.6023 205.715 11.4924 205.263 11.8092C204.811 12.1261 204.701 12.7496 205.018 13.202L209.607 19.7546L203.055 24.3441C202.602 24.6609 202.492 25.2845 202.809 25.7368C203.126 26.1892 203.75 26.2991 204.202 25.9822L211.574 20.8191ZM1.17352 20.9848L106.174 2.48483L105.826 0.515169L0.826482 19.0152L1.17352 20.9848ZM105.826 2.48483L210.826 20.9848L211.174 19.0152L106.174 0.515169L105.826 2.48483Z" fill="black"/> </svg>
-    <svg width="201" height="16" viewBox="0 0 201 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "running-terminate" class = "arrow"> <path d="M200.707 8.70711C201.098 8.31658 201.098 7.68342 200.707 7.29289L194.343 0.928932C193.953 0.538408 193.319 0.538408 192.929 0.928932C192.538 1.31946 192.538 1.95262 192.929 2.34315L198.586 8L192.929 13.6569C192.538 14.0474 192.538 14.6805 192.929 15.0711C193.319 15.4616 193.953 15.4616 194.343 15.0711L200.707 8.70711ZM0 9H200V7H0V9Z" fill="black"/> </svg>
-    <svg width="126" height="16" viewBox="0 0 126 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "running-block" class = "arrow"> <path d="M125.707 8.70711C126.098 8.31658 126.098 7.68342 125.707 7.29289L119.343 0.928932C118.953 0.538408 118.319 0.538408 117.929 0.928932C117.538 1.31946 117.538 1.95262 117.929 2.34315L123.586 8L117.929 13.6569C117.538 14.0474 117.538 14.6805 117.929 15.0711C118.319 15.4616 118.953 15.4616 119.343 15.0711L125.707 8.70711ZM0 9H125V7H0V9Z" fill="black"/> </svg>
-    <svg width="126" height="16" viewBox="0 0 126 16" fill="none" xmlns="http://www.w3.org/2000/svg" id = "block-ready" class = "arrow"> <path d="M125.707 8.70711C126.098 8.31658 126.098 7.68342 125.707 7.29289L119.343 0.928932C118.953 0.538408 118.319 0.538408 117.929 0.928932C117.538 1.31946 117.538 1.95262 117.929 2.34315L123.586 8L117.929 13.6569C117.538 14.0474 117.538 14.6805 117.929 15.0711C118.319 15.4616 118.953 15.4616 119.343 15.0711L125.707 8.70711ZM0 9H125V7H0V9Z" fill="black"/> </svg>
+    <p id = "remain-ready" class = "arrow">&rarr;</p>
+    <p id = "ready-running" class = "arrow">&#10554;</p>
+    <p id = "running-ready" class = "arrow">&#10554;</p>
+    <p id = "running-terminate" class = "arrow">&rarr;</p>
+    <p id = "running-block" class = "arrow">&rarr;</p>
+    <p id = "block-ready" class = "arrow">&rarr;</p>
     `;
     timeLogTableDiv.innerHTML = arrowHTML;
 
     let remainTable = document.createElement("table");
     remainTable.id = "remain-table";
+    remainTable.className = 'time-log-table';
     let remainTableHead = remainTable.createTHead();
     let remainTableHeadRow = remainTableHead.insertRow(0);
     let remainTableHeading = remainTableHeadRow.insertCell(0);
@@ -578,6 +596,7 @@ function nextTimeLog(timeLog) {
 
     let readyTable = document.createElement("table");
     readyTable.id = "ready-table";
+    readyTable.className = 'time-log-table';
     let readyTableHead = readyTable.createTHead();
     let readyTableHeadRow = readyTableHead.insertRow(0);
     let readyTableHeading = readyTableHeadRow.insertCell(0);
@@ -592,6 +611,7 @@ function nextTimeLog(timeLog) {
 
     let runningTable = document.createElement("table");
     runningTable.id = "running-table";
+    runningTable.className = 'time-log-table';
     let runningTableHead = runningTable.createTHead();
     let runningTableHeadRow = runningTableHead.insertRow(0);
     let runningTableHeading = runningTableHeadRow.insertCell(0);
@@ -606,6 +626,7 @@ function nextTimeLog(timeLog) {
 
     let blockTable = document.createElement("table");
     blockTable.id = "block-table";
+    blockTable.className = 'time-log-table';
     let blockTableHead = blockTable.createTHead();
     let blockTableHeadRow = blockTableHead.insertRow(0);
     let blockTableHeading = blockTableHeadRow.insertCell(0);
@@ -620,6 +641,7 @@ function nextTimeLog(timeLog) {
 
     let terminateTable = document.createElement("table");
     terminateTable.id = "terminate-table";
+    terminateTable.className = 'time-log-table';
     let terminateTableHead = terminateTable.createTHead();
     let terminateTableHeadRow = terminateTableHead.insertRow(0);
     let terminateTableHeading = terminateTableHeadRow.insertCell(0);
@@ -724,9 +746,6 @@ function showRoundRobinChart(outputDiv) {
         roundRobinChartCanvas.id = "round-robin-chart";
         let roundRobinChartDiv = document.createElement('div');
         roundRobinChartDiv.id = "round-robin-chart-div";
-        roundRobinChartDiv.style.height = "40vh";
-        roundRobinChartDiv.style.width = "80%";
-        roundRobinChartDiv.style.marginBottom = "400px";
         roundRobinChartDiv.appendChild(roundRobinChartCanvas);
         outputDiv.appendChild(roundRobinChartDiv);
 

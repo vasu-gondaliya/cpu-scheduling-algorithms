@@ -76,17 +76,20 @@ button {
     height: 50%;
 }
 
+#round-robin-chart-div {
+    height: 40%;
+    width: 80%;
+}
+
 #gantt-chart {
     height: 250px;
     overflow-x: scroll;
     overflow-y: hidden;
-    width: 1200px;
 }
 
 #timeline-chart {
     overflow-x: scroll;
     overflow-y: hidden;
-    width: 1200px;
     height: 250px;
 }
 
@@ -110,64 +113,72 @@ thead {
 }
 
 #time-log-table-div {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-around;
+    margin-top: 10vh;
     position: relative;
+}
+
+.time-log-table {
+    width: 10%;
+    position: absolute;
 }
 
 #remain-table {
-    width: 100px;
-    position: relative;
+    left: 7.5%;
 }
 
 #ready-table {
-    width: 100px;
-    position: relative;
+    left: 32.5%;
 }
 
 #running-table {
-    width: 100px;
-    position: relative;
+    right: 32.5%;
 }
 
 #block-table {
-    width: 100px;
-    position: absolute;
-    right: 46%;
-    top: 115px;
+    left: 45%;
+    top: 8vw;
 }
 
 #terminate-table {
-    width: 100px;
-    position: relative;
+    right: 7.5%;
 }
 
 .arrow {
     position: absolute;
-    font-size: 24px;
+    font-size: 100px;
 }
 
 #remain-ready {
-    left: 210px;
+    left: 20.5%;
+    top: -62px;
 }
 
 #ready-running {
-    transform: translate(0, -20px);
+    transform: rotate(180deg);
+    left: 47%;
+    top: -15px;
+    font-size: 80px;
 }
 
 #running-ready {
-    transform: rotate(180deg) translate(0, -5px);
+    left: 47%;
+    top: -60px;
+    font-size: 80px;
 }
 
 #running-terminate {
-    right: 210px;
+    right: 20.5%;
+    top: -62px;
 }
 
 #running-block {
-    transform: translate(57px, 60px) rotate(135deg);
+    transform: rotate(135deg);
+    left: 52%;
+    top: 20px;
 }
 
 #block-ready {
-    transform: translate(-57px, 60px) rotate(225deg);
+    transform: rotate(225deg);
+    left: 40%;
+    top: 20px;
 }
