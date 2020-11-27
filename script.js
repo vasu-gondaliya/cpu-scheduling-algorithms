@@ -1023,21 +1023,23 @@ function CPUScheduler(input, utility, output) {
                         moveElement(found, currentTimeLog.running, currentTimeLog.block);
                         currentTimeLog.move.push(4);
                     }
+                    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                    currentTimeLog.move = [];
+                    if (currentTimeLog.running.length == 0) //context switch
+                    {
+                        output.schedule.push([-2, input.contextSwitch]);
+                        for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
+                            updateReadyQueue(currentTimeLog);
+                        }
+                        if (input.contextSwitch > 0) {
+                            output.contextSwitches++;
+                        }
+                    }
                 } else if (input.algorithmType == "preemptive") {
                     moveElement(found, currentTimeLog.running, currentTimeLog.ready);
                     currentTimeLog.move.push(3);
-                }
-                output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
-                currentTimeLog.move = [];
-                if (currentTimeLog.running.length == 0) //context switch
-                {
-                    output.schedule.push([-2, input.contextSwitch]);
-                    for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
-                        updateReadyQueue(currentTimeLog);
-                    }
-                    if (input.contextSwitch > 0) {
-                        output.contextSwitches++;
-                    }
+                    output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
+                    currentTimeLog.move = [];
                 }
             }
         } else {
