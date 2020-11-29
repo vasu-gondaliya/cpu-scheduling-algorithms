@@ -924,7 +924,7 @@ function CPUScheduler(input, utility, output) {
     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     currentTimeLog.move = [];
     currentTimeLog.time++;
-
+    let lastFound = -1;
     while (utility.done.some((element) => element == false)) {
         updateReadyQueue(currentTimeLog);
         let found = -1;
@@ -960,6 +960,15 @@ function CPUScheduler(input, utility, output) {
                     }
                 });
                 found = candidates[0];
+                if (input.algorithmType == "preemptive" && found >= 0 && lastFound >= 0 && found != lastFound) { //context switch
+                    output.schedule.push([-2, input.contextSwitch]);
+                    for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
+                        updateReadyQueue(currentTimeLog);
+                    }
+                    if (input.contextSwitch > 0) {
+                        output.contextSwitches++;
+                    }
+                }
             }
             moveElement(found, currentTimeLog.ready, currentTimeLog.running);
             currentTimeLog.move.push(1);
@@ -975,8 +984,9 @@ function CPUScheduler(input, utility, output) {
             output.schedule.push([found + 1, 1]);
             utility.remainingProcessTime[found][utility.currentProcessIndex[found]]--;
             utility.remainingBurstTime[found]--;
-            utility.remainingTimeRunning[found]--;
+
             if (input.algorithm == 'rr') {
+                utility.remainingTimeRunning[found]--;
                 if (utility.remainingTimeRunning[found] == 0) {
                     if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
                         utility.currentProcessIndex[found]++;
@@ -1009,7 +1019,7 @@ function CPUScheduler(input, utility, output) {
                         output.contextSwitches++;
                     }
                 }
-            } else {
+            } else { //preemptive and non-preemptive
                 if (utility.remainingProcessTime[found][utility.currentProcessIndex[found]] == 0) {
                     utility.currentProcessIndex[found]++;
                     if (utility.currentProcessIndex[found] == input.processTimeLength[found]) {
@@ -1025,8 +1035,7 @@ function CPUScheduler(input, utility, output) {
                     }
                     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
                     currentTimeLog.move = [];
-                    if (currentTimeLog.running.length == 0) //context switch
-                    {
+                    if (currentTimeLog.running.length == 0) { //context switch
                         output.schedule.push([-2, input.contextSwitch]);
                         for (let i = 0; i < input.contextSwitch; i++, currentTimeLog.time++) {
                             updateReadyQueue(currentTimeLog);
@@ -1035,15 +1044,18 @@ function CPUScheduler(input, utility, output) {
                             output.contextSwitches++;
                         }
                     }
+                    lastFound = -1;
                 } else if (input.algorithmType == "preemptive") {
                     moveElement(found, currentTimeLog.running, currentTimeLog.ready);
                     currentTimeLog.move.push(3);
                     output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
                     currentTimeLog.move = [];
+                    lastFound = found;
                 }
             }
         } else {
             output.schedule.push([-1, 1]);
+            lastFound = -1;
         }
         output.timeLog.push(JSON.parse(JSON.stringify(currentTimeLog)));
     }
