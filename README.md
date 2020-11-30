@@ -6,6 +6,7 @@
 - Gantt Chart and Timeline Chart for the given Schedule.
 - Context Switching Time.
 - Animation of the Time Log.
+- Comparison for Round Robin Algorithm for all time quantum.
 - Comparison between all the algorithms wrt Average Completion Time, Turn Around Time, Waiting Time and Response Time.
 
 
@@ -41,7 +42,7 @@
 **Preemptive:**
   A job in the Running Queue can be removed (preeempted) by other process of higher priority or with better criteria satisfaction or the given time quantum is completed.
   
-#### Different Queues in CPU Scheduler
+#### Different States in CPU Scheduler
 - Remain
   >The processes which are yet to arrive.
 - Ready
