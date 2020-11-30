@@ -707,101 +707,106 @@ function showTimeLog(output, outputDiv) {
 }
 
 function showRoundRobinChart(outputDiv) {
-    if (selectedAlgorithm.value == 'rr') {
+    let roundRobinInput = new Input();
+    setInput(roundRobinInput);
+    let maxTimeQuantum = 0;
+    roundRobinInput.processTime.forEach(processTimeArray => {
+        processTimeArray.forEach((time, index) => {
+            if (index % 2 == 0) {
+                maxTimeQuantum = Math.max(maxTimeQuantum, time);
+            }
+        });
+    });
+    let roundRobinChartData = [
+        [],
+        [],
+        [],
+        [],
+        []
+    ];
+    let timeQuantumArray = [];
+    for (let timeQuantum = 1; timeQuantum <= maxTimeQuantum; timeQuantum++) {
+        timeQuantumArray.push(timeQuantum);
         let roundRobinInput = new Input();
         setInput(roundRobinInput);
-        let maxTimeQuantum = 0;
-        roundRobinInput.processTime.forEach(processTimeArray => {
-            processTimeArray.forEach((time, index) => {
-                if (index % 2 == 0) {
-                    maxTimeQuantum = Math.max(maxTimeQuantum, time);
-                }
-            });
-        });
-        let roundRobinChartData = [
-            [],
-            [],
-            [],
-            [],
-            []
-        ];
-        let timeQuantumArray = [];
-        for (let timeQuantum = 1; timeQuantum <= maxTimeQuantum; timeQuantum++) {
-            timeQuantumArray.push(timeQuantum);
-            let roundRobinInput = new Input();
-            setInput(roundRobinInput);
-            setAlgorithmNameType(roundRobinInput, 'rr');
-            roundRobinInput.timeQuantum = timeQuantum;
-            let roundRobinUtility = new Utility();
-            setUtility(roundRobinInput, roundRobinUtility);
-            let roundRobinOutput = new Output();
-            CPUScheduler(roundRobinInput, roundRobinUtility, roundRobinOutput);
-            setOutput(roundRobinInput, roundRobinOutput);
-            for (let i = 0; i < 4; i++) {
-                roundRobinChartData[i].push(roundRobinOutput.averageTimes[i]);
-            }
-            roundRobinChartData[4].push(roundRobinOutput.contextSwitches);
+        setAlgorithmNameType(roundRobinInput, 'rr');
+        roundRobinInput.timeQuantum = timeQuantum;
+        let roundRobinUtility = new Utility();
+        setUtility(roundRobinInput, roundRobinUtility);
+        let roundRobinOutput = new Output();
+        CPUScheduler(roundRobinInput, roundRobinUtility, roundRobinOutput);
+        setOutput(roundRobinInput, roundRobinOutput);
+        for (let i = 0; i < 4; i++) {
+            roundRobinChartData[i].push(roundRobinOutput.averageTimes[i]);
         }
-        let roundRobinChartCanvas = document.createElement('canvas');
-        roundRobinChartCanvas.id = "round-robin-chart";
-        let roundRobinChartDiv = document.createElement('div');
-        roundRobinChartDiv.id = "round-robin-chart-div";
-        roundRobinChartDiv.appendChild(roundRobinChartCanvas);
-        outputDiv.appendChild(roundRobinChartDiv);
+        roundRobinChartData[4].push(roundRobinOutput.contextSwitches);
+    }
+    let roundRobinChartCanvas = document.createElement('canvas');
+    roundRobinChartCanvas.id = "round-robin-chart";
+    let roundRobinChartDiv = document.createElement('div');
+    roundRobinChartDiv.id = "round-robin-chart-div";
+    roundRobinChartDiv.appendChild(roundRobinChartCanvas);
+    outputDiv.appendChild(roundRobinChartDiv);
 
-        new Chart(document.getElementById('round-robin-chart'), {
-            type: 'line',
-            data: {
-                labels: timeQuantumArray,
-                datasets: [{
-                        label: "Completion Time",
-                        borderColor: '#3366CC',
-                        data: roundRobinChartData[0]
-                    },
-                    {
-                        label: "Turn Around Time",
-                        borderColor: '#DC3912',
-                        data: roundRobinChartData[1]
-                    },
-                    {
-                        label: "Waiting Time",
-                        borderColor: '#FF9900',
-                        data: roundRobinChartData[2]
-                    },
-                    {
-                        label: "Response Time",
-                        borderColor: '#109618',
-                        data: roundRobinChartData[3]
-                    },
-                    {
-                        label: "Context Switches",
-                        borderColor: '#990099',
-                        data: roundRobinChartData[4]
-                    },
-                ]
+    new Chart(document.getElementById('round-robin-chart'), {
+        type: 'line',
+        data: {
+            labels: timeQuantumArray,
+            datasets: [{
+                    label: "Completion Time",
+                    borderColor: '#3366CC',
+                    data: roundRobinChartData[0]
+                },
+                {
+                    label: "Turn Around Time",
+                    borderColor: '#DC3912',
+                    data: roundRobinChartData[1]
+                },
+                {
+                    label: "Waiting Time",
+                    borderColor: '#FF9900',
+                    data: roundRobinChartData[2]
+                },
+                {
+                    label: "Response Time",
+                    borderColor: '#109618',
+                    data: roundRobinChartData[3]
+                },
+                {
+                    label: "Context Switches",
+                    borderColor: '#990099',
+                    data: roundRobinChartData[4]
+                },
+            ]
+        },
+        options: {
+            title: {
+                display: true,
+                text: ['Round Robin', 'Comparison of Completion, Turn Around, Waiting, Response Time and Context Switches', 'The Lower The Better']
             },
-            options: {
-                title: {
-                    display: true,
-                    text: ['Round Robin', 'Comparison of Completion, Turn Around, Waiting, Response Time and Context Switches', 'The Lower The Better']
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                },
-                legend: {
-                    display: true,
-                    labels: {
-                        fontColor: 'black'
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
                     }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time Quantum'
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                labels: {
+                    fontColor: 'black'
                 }
             }
-        });
-    }
+        }
+    });
 }
+
 
 function showAlgorithmChart(outputDiv) {
     let algorithmArray = ["fcfs", "sjf", "srtf", "ljf", "lrtf", "rr", "hrrn", "pnp", "pp"];
@@ -869,6 +874,12 @@ function showAlgorithmChart(outputDiv) {
                     ticks: {
                         beginAtZero: true
                     }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Algorithms'
+                    }
                 }]
             },
             legend: {
@@ -883,10 +894,17 @@ function showAlgorithmChart(outputDiv) {
 
 function showOutput(input, output, outputDiv) {
     showGanttChart(output, outputDiv);
+    outputDiv.insertAdjacentHTML("beforeend", "<hr>");
     showTimelineChart(output, outputDiv);
+    outputDiv.insertAdjacentHTML("beforeend", "<hr>");
     showFinalTable(input, output, outputDiv);
+    outputDiv.insertAdjacentHTML("beforeend", "<hr>");
     showTimeLog(output, outputDiv);
-    showRoundRobinChart(outputDiv);
+    outputDiv.insertAdjacentHTML("beforeend", "<hr>");
+    if (selectedAlgorithm.value == "rr") {
+        showRoundRobinChart(outputDiv);
+        outputDiv.insertAdjacentHTML("beforeend", "<hr>");
+    }
     showAlgorithmChart(outputDiv);
 }
 
