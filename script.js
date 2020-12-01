@@ -551,12 +551,18 @@ function showFinalTable(input, output, outputDiv) {
     input.totalBurstTime.forEach((element) => (tbt += element));
     let lastct = 0;
     output.completionTime.forEach((element) => (lastct = Math.max(lastct, element)));
+
     let cpu = document.createElement("p");
     cpu.innerHTML = "CPU Utilization : " + (tbt / lastct) * 100 + "%";
     outputDiv.appendChild(cpu);
+
     let tp = document.createElement("p");
     tp.innerHTML = "Throughput : " + process / lastct;
     outputDiv.appendChild(tp);
+
+    let cs = document.createElement("p");
+    cs.innerHTML = "Number of Context Switches : " + (output.contextSwitches - 1);
+    outputDiv.appendChild(cs);
 }
 
 function toggleTimeLogArrowColor(timeLog, color) {
