@@ -559,10 +559,12 @@ function showFinalTable(input, output, outputDiv) {
     let tp = document.createElement("p");
     tp.innerHTML = "Throughput : " + process / lastct;
     outputDiv.appendChild(tp);
+    if (input.contextSwitch > 0) {
 
-    let cs = document.createElement("p");
-    cs.innerHTML = "Number of Context Switches : " + (output.contextSwitches - 1);
-    outputDiv.appendChild(cs);
+        let cs = document.createElement("p");
+        cs.innerHTML = "Number of Context Switches : " + (output.contextSwitches - 1);
+        outputDiv.appendChild(cs);
+    }
 }
 
 function toggleTimeLogArrowColor(timeLog, color) {
