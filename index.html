@@ -72,7 +72,7 @@
         <button type="button" class="remove-btn">Delete Process</button>
         <div id="context-switch-div">
             <br>
-            <label for="context-switch">Context Switch Time : </label>
+            <label for="context-switch">Context Switch Time(CS in Gantt Chart): </label>
             <input type="number" name="Context Switch" id="context-switch" min="0" step="1" value="0">
         </div>
         <div id="time-quantum" class="hide">
@@ -80,6 +80,13 @@
             <label for="tq">Time Quantum : </label>
             <input type="number" name="Time Quantum" id="tq" min="1" step="1" value="1">
         </div>
+<!--         Efficiency calculation can be added too here.. 
+using 
+Efficiency=(Total time-total burst time)/Total time
+similarly Throughput Calculation can be added too..
+as these gives a faster idea(faster way of analysis).
+-->
+        
         <br>
         <button type="button" id="calculate">Calculate</button>
         <button type="button" id="reset" onClick="window.location.reload();">Reset</button>
