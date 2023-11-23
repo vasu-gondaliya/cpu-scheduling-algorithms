@@ -576,16 +576,13 @@ function toggleTimeLogArrowColor(timeLog, color) {
 
 function nextTimeLog(timeLog) {
     let timeLogTableDiv = document.getElementById("time-log-table-div");
+    timeLogTableDiv.innerHTML = '';
 
-    let arrowHTML = `
-    <p id = "remain-ready" class = "arrow">&rarr;</p>
-    <p id = "ready-running" class = "arrow">&#10554;</p>
-    <p id = "running-ready" class = "arrow">&#10554;</p>
-    <p id = "running-terminate" class = "arrow">&rarr;</p>
-    <p id = "running-block" class = "arrow">&rarr;</p>
-    <p id = "block-ready" class = "arrow">&rarr;</p>
-    `;
-    timeLogTableDiv.innerHTML = arrowHTML;
+    let remainReady = `<p id = "remain-ready" class = "arrow">&rarr;</p>`
+    let readyRunning = `<div><p id = "running-ready" class = "arrow">&#10554;</p><p id = "ready-running" class = "arrow">&#10554;</p></div>`
+    let runningTerminate = `<p id = "running-terminate" class = "arrow">&rarr;</p>`
+    let runningBlock = `<p id = "running-block" class = "arrow">&rarr;</p>`
+    let blockReady = `<p id = "block-ready" class = "arrow">&rarr;</p>`
 
     let remainTable = document.createElement("table");
     remainTable.id = "remain-table";
@@ -600,7 +597,6 @@ function nextTimeLog(timeLog) {
         let remainTableValue = remainTableBodyRow.insertCell(0);
         remainTableValue.innerHTML = 'P' + (timeLog.remain[i] + 1);
     }
-    timeLogTableDiv.appendChild(remainTable);
 
     let readyTable = document.createElement("table");
     readyTable.id = "ready-table";
@@ -615,7 +611,6 @@ function nextTimeLog(timeLog) {
         let readyTableValue = readyTableBodyRow.insertCell(0);
         readyTableValue.innerHTML = 'P' + (timeLog.ready[i] + 1);
     }
-    timeLogTableDiv.appendChild(readyTable);
 
     let runningTable = document.createElement("table");
     runningTable.id = "running-table";
@@ -630,7 +625,6 @@ function nextTimeLog(timeLog) {
         let runningTableValue = runningTableBodyRow.insertCell(0);
         runningTableValue.innerHTML = 'P' + (timeLog.running[i] + 1);
     }
-    timeLogTableDiv.appendChild(runningTable);
 
     let blockTable = document.createElement("table");
     blockTable.id = "block-table";
@@ -645,7 +639,6 @@ function nextTimeLog(timeLog) {
         let blockTableValue = blockTableBodyRow.insertCell(0);
         blockTableValue.innerHTML = 'P' + (timeLog.block[i] + 1);
     }
-    timeLogTableDiv.appendChild(blockTable);
 
     let terminateTable = document.createElement("table");
     terminateTable.id = "terminate-table";
@@ -660,7 +653,65 @@ function nextTimeLog(timeLog) {
         let terminateTableValue = terminateTableBodyRow.insertCell(0);
         terminateTableValue.innerHTML = 'P' + (timeLog.terminate[i] + 1);
     }
-    timeLogTableDiv.appendChild(terminateTable);
+
+    const timeLogSkeletonTableConfig = [
+        [
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+            {type: "element", content: terminateTable},
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+        ],
+        [
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+            {type: "html", content: runningBlock, className: 'southwest-arrow'},
+            {type: "blank", content: ''},
+            {type: "html", content: blockReady, className: 'northwest-arrow'},
+            {type: "blank", content: ''},
+            {type: "blank", content: ''},
+        ],
+        [
+            {type: "element", content: blockTable},
+            {type: "html", content: runningTerminate},
+            {type: "element", content: runningTable},
+            {type: "html", content: readyRunning},
+            {type: "element", content: readyTable},
+            {type: "html", content: remainReady},
+            {type: "element", content: remainTable},
+        ],
+    ];
+
+    let timeLogSkeletonTable = document.createElement("table");
+    timeLogSkeletonTable.id = "diagram-skeleton";
+    
+    timeLogSkeletonTableConfig.forEach((row) => {
+        let skeletonTableRow = timeLogSkeletonTable.insertRow(0);
+        (row || [])?.forEach(({type = 'blank', content = '', className = ''}) => {
+            let skeletonTableCell = skeletonTableRow.insertCell(0);
+            let skeletonTableCellDiv = document.createElement("div");
+        
+            skeletonTableCellDiv.className = `diagram-cell ${className && className}`
+            
+            skeletonTableCell.appendChild(skeletonTableCellDiv);
+            switch(type){
+                case 'element':
+                    skeletonTableCellDiv.appendChild(content);
+                    break;
+                case 'html':
+                    skeletonTableCellDiv.innerHTML = content;
+                    break;
+                default: {
+                    skeletonTableCellDiv.innerHTML = '';
+                }
+
+            }
+        })
+    })
+    timeLogTableDiv.appendChild(timeLogSkeletonTable);
+
     document.getElementById("time-log-time").innerHTML = "Time : " + timeLog.time;
 }
 
@@ -668,7 +719,7 @@ function showTimeLog(output, outputDiv) {
     reduceTimeLog(output.timeLog);
     let timeLogDiv = document.createElement("div");
     timeLogDiv.id = "time-log-div";
-    timeLogDiv.style.height = (15 * process) + 300 + "px";
+    timeLogDiv.style.height = (20 * process) + 300 + "px";
     let startTimeLogButton = document.createElement("button");
     startTimeLogButton.id = "start-time-log";
     startTimeLogButton.innerHTML = "Start Time Log";
