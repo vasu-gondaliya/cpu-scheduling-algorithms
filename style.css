@@ -112,73 +112,50 @@ thead {
     font-weight: bold;
 }
 
-#time-log-table-div {
-    margin-top: 10vh;
-    position: relative;
-}
-
-.time-log-table {
-    width: 10%;
-    position: absolute;
-}
-
-#remain-table {
-    left: 7.5%;
-}
-
-#ready-table {
-    left: 32.5%;
-}
-
-#running-table {
-    right: 32.5%;
-}
-
-#block-table {
-    left: 45%;
-    top: 8vw;
-}
-
-#terminate-table {
-    right: 7.5%;
-}
-
 .arrow {
-    position: absolute;
-    font-size: 100px;
-}
-
-#remain-ready {
-    left: 20.5%;
-    top: -62px;
+    font-size: 70px;
 }
 
 #ready-running {
     transform: rotate(180deg);
-    left: 47%;
-    top: -15px;
     font-size: 80px;
+    
 }
 
 #running-ready {
-    left: 47%;
-    top: -60px;
     font-size: 80px;
-}
-
-#running-terminate {
-    right: 20.5%;
-    top: -62px;
+    height: 30px;
 }
 
 #running-block {
     transform: rotate(135deg);
-    left: 52%;
-    top: 20px;
+    font-size: 60px;
 }
 
 #block-ready {
+    font-size: 60px;
     transform: rotate(225deg);
-    left: 40%;
-    top: 20px;
+}
+
+#diagram-skeleton {
+    width: 100%;
+    border: 0;
+}
+
+#diagram-skeleton td {
+    border: 0;
+}
+
+.diagram-cell{
+    border: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.northwest-arrow{
+    justify-content: flex-end;
+}
+
+.southwest-arrow{
+    justify-content: flex-start;
 }
